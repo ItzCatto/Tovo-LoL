@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en"><head><script>window["__codeletBootstrap__"]=JSON.parse('{"A":"A","B":"20261002-05-536c453","C":{"Abril Fatface":"YACgEZbkUVE,0","Alfa Slab One":"YACgEYS9sJU,0","Anton":"YACgEcYqQ-A,0","Archivo":"YACgEZulLoA,0","Arial Narrow":"YAGyDvJ_4Ts,0","Arial Rounded MT Bold":"YAFcfoaHu-s,0","Arial":"YAGyDvJ_4Ts,0","Avenir Next":"YAFcfmNq6UY,0","Baloo 2":"YADK30bC6HQ,0","Bebas Neue":"YACgESME5ew,0","Bricolage Grotesque":"YAFyMcdwzpc,0","Broken Glyph":"YADZ-exUkv0,0","Canva Sans":"YAFdJjTk5UU,1","Caveat":"YALBs2ploWQ,0","Comic Sans MS":"YAFcfvtOAUY,1","Cormorant Garamond":"YAFdJhX-538,0","Courier New":"YAGzXiGs0_8,0","Courier Prime":"YAD1aFjegN8,0","DM Sans":"YAD1aU3sLnI,0","DM Serif Display":"YAD1aYG82rc,0","Forum":"YACgEcnnqB4,0","Fraunces":"YAFdJpU7Kkk,0","Georgia":"YAGzXkO0pEM,0","Ghost Mono":"YAHQutsX00Q,0","Hanken Grotesk":"YAFcfhwp99E,0","Helvetica Neue":"YAFcf6CtJfI,0","Helvetica":"YAFcf6CtJfI,0","IBM Plex Mono":"YAFdJkmvhGI,0","Impact":"YAFcfnjI7Vk,0","Instrument Serif":"YAHFeOnZNEk,0","Inter":"YAFdJvSyp_k,3","Iowan Old Style":"YAGNIFa8j9o,0","Jacques Francois":"YADK3zbC6RM,0","JetBrains Mono":"YAFdJksXcAk,0","Josefin Sans":"YAFdJjvw9Ps,0","Lato":"YAFdJuFCnaw,0","Libre Baskerville":"YACgEUFdPdA,0","Lobster":"YAD8SnSjSFI,0","Lora":"YACgEXvxf8Q,0","Merriweather":"YACgEXvHxxs,0","Montserrat":"YAFdtQi73Xs,0","Nunito":"YAFdJoNRMmU,1","Oleo Script":"YACgEQQ14jI,0","Oswald":"YACgEQY10lw,0","Pacifico":"YADLjORQ1u4,0","Phantom Sans":"YAFdJvgJ5TU,0","Playfair Display":"YAFdJhem5V8,1","Plus Jakarta Sans":"YAGvf3_u0_Q,0","Poppins":"YAFdJjbTu24,1","Press Start 2P":"YAFyGr-8pmQ,0","Quicksand":"YAFdJpYtCxE,1","Raleway":"YAFdJhmxbVQ,1","Roboto Slab":"YAFdJswIKAg,0","Rockwell":"YAFcfyVZnN0,0","Rye":"YACgEdQP21k,0","Segoe UI":"YAHNdRD1Klw,0","Source Sans 3":"YAG4lO1Mj10,0","Source Serif 4":"YACgEfdj394,0","Space Grotesk":"YADZ-dYEmhg,0","Space Mono":"YADW1-vpsoc,0","Times New Roman":"YAGzXW3gftg,0","Times":"YAGzXW3gftg,0","Trebuchet MS":"YAFcfrglpVA,0","UV Display":"YAEdVfSSpYo,0","UV Sans":"YAFdJvgJ5TU,0","Ubuntu":"YACgERDU--Q,0","Verdana":"YAGzXTctYtQ,0","Work Sans":"YAGXhLOKv44,0","Yellowtail":"YACgEYG4kG4,0","ui-monospace":"YAD1aFjegN8,0","ui-sans-serif":"YACkoD1yZN0,0"}}');</script><script src="/_sdk/6542d56fbfe7a3eb.telemetry_sdk.js" integrity="sha512-ECdM0nK7EkwDuOqho2qxgyRQXyBHk9hZqRKMBr+Xsu6zjeHlt+qkO2N2YRiHN7Kg4e1fEHDhjIp4bGJYVypv1g=="></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tovo TV OS</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --graphite:#111816;
+      --slate:#18211e;
+      --slate-2:#222d28;
+      --slate-3:#2d3933;
+      --text:#f2eee3;
+      --muted:#aab3aa;
+      --line:#3a4740;
+      --copper:#b8755f;
+      --copper-dark:#8e5949;
+    }
+    *{box-sizing:border-box}
+    html{background:var(--graphite)}
+    body{
+      margin:0; min-width:320px; overflow-x:hidden;
+      background:var(--graphite); color:var(--text);
+      font-family:"DM Sans",sans-serif;
+    }
+    button,input{font:inherit}
+    button{cursor:pointer}
+    button:focus-visible,input:focus-visible{outline:none}
+    .app-shell{width:100%;min-height:calc(100 * min(var(--vh,1vh),1vh));position:relative;background:var(--graphite)}
+    .control-dock{
+      position:fixed;top:28px;right:4vw;z-index:40;
+      display:flex;gap:8px;padding:6px;
+      background:transparent;border:0;
+      box-shadow:none;
+    }
+    .icon-button,.nav-item,.action-button,.movie-card,.setting-tile,.keyboard-key{
+      border:0;transition:border-color .16s ease,transform .16s ease,background .16s ease;
+    }
+    .icon-button{
+      width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;
+      background:transparent;color:var(--text);border-radius:999px;
+    }
+    .focusable:focus,.focused{
+      outline:2px solid var(--copper)!important;outline-offset:3px;
+      transform:scale(1.025);
+      position:relative;z-index:5;
+    }
+    .nav-item,.setting-tile,.action-button{background:transparent!important;border:0!important;border-radius:999px}
+    .nav-item.active,.setting-tile.active{background:transparent!important;color:var(--text)}
+    .action-button{padding-left:8px;padding-right:8px;color:var(--text)}
+    .primary,.secondary{background:transparent!important;color:var(--text);border:0!important}
+    .keyboard-key{background:var(--slate-2);border-radius:50%;aspect-ratio:1;min-height:46px}
+    .keyboard-key.wide{border-radius:999px;aspect-ratio:auto}
+    .movie-card img{border:0}
+    .side-rail{
+      position:fixed;inset:0 auto 0 0;z-index:60;width:300px;padding:108px 20px 28px;
+      transform:translateX(-101%);transition:transform .22s ease;
+      background:var(--graphite);border-right:1px solid var(--line);
+    }
+    .side-rail.open{transform:translateX(0)}
+    .nav-item{
+      width:100%;display:flex;align-items:center;gap:15px;padding:15px 16px;
+      background:transparent;color:var(--muted);text-align:left;font-size:17px;font-weight:600;
+    }
+    .nav-item.active{background:var(--slate-3);color:var(--text);border-left-color:var(--copper)}
+    .view{display:none;animation:fade .2s ease}.view.active{display:block}
+    @keyframes fade{from{opacity:0}to{opacity:1}}
+    .hero{
+      min-height:590px;position:relative;display:flex;align-items:flex-end;
+      padding:115px 7vw 70px;overflow:hidden;border-bottom:1px solid var(--line);
+    }
+    .hero-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.38}
+    .hero-shade{
+      position:absolute;inset:0;
+      background:linear-gradient(90deg,#101112 8%,rgba(16,17,18,.91) 38%,rgba(16,17,18,.22) 78%),linear-gradient(0deg,#101112 0%,transparent 60%);
+    }
+    .hero-content{position:relative;max-width:720px}
+    .eyebrow{color:var(--copper);font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+    .hero-title,.page-heading h1,.details-content h1{margin:12px 0;line-height:.98;letter-spacing:-.05em;font-weight:700}
+    .hero-title{font-size:clamp(46px,5.4vw,78px)}
+    .meta{display:flex;flex-wrap:wrap;gap:10px;color:#d7d3cb;font-size:16px;font-weight:500}
+    .synopsis{max-width:650px;margin:18px 0 26px;color:#c2c5c5;font-size:18px;line-height:1.55}
+    .action-row{display:flex;gap:12px;flex-wrap:wrap}
+    .action-button{
+      min-height:52px;padding:0 24px;display:inline-flex;align-items:center;gap:10px;
+      font-size:17px;font-weight:700;
+    }
+    .primary{background:var(--copper);color:#171311;border-color:var(--copper)}
+    .secondary{background:var(--slate-2);color:var(--text);border-color:var(--line)}
+    .content-area{padding:16px 7vw 76px}
+    .rail-section{margin-top:38px}
+    .section-heading{margin-bottom:8px}
+    .section-heading h2{margin:0;font-size:25px;letter-spacing:-.025em}
+    .movie-rail{display:flex;gap:20px;overflow-x:auto;padding:18px 4px 34px;scrollbar-width:none}
+    .movie-rail::-webkit-scrollbar{display:none}
+    .movie-card{
+      flex:0 0 210px;padding:0;background:transparent;color:var(--text);text-align:left;
+      border-color:transparent;
+    }
+    .movie-card img{
+      width:100%;aspect-ratio:2/3;display:block;object-fit:cover;background:var(--slate-2);
+      border:1px solid var(--line);
+    }
+    .movie-card:focus img,.movie-card.focused img{border-color:var(--copper)}
+    .movie-info{display:block;padding:11px 1px 0}
+    .movie-name{display:block;font-size:16px;font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .movie-type{display:block;margin-top:4px;color:var(--muted);font-size:14px}
+    .progress-track{display:block;height:3px;margin-top:11px;background:#3b3e40}
+    .progress-fill{display:block;height:100%;background:var(--copper)}
+    .page-heading{padding:112px 7vw 18px;border-bottom:1px solid var(--line)}
+    .page-heading h1{font-size:clamp(37px,4vw,58px)}
+    .page-heading p{margin:10px 0 0;color:var(--muted);font-size:17px}
+    .catalog-grid{padding:30px 7vw 72px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,210px));gap:32px 20px}
+    .search-panel{padding:30px 7vw 72px}
+    .search-input-wrap{max-width:920px;display:flex;align-items:center;gap:14px;padding:0;background:transparent;border:0}
+    .search-input-wrap:focus-within{border-color:transparent}
+    .search-input{width:100%;padding:17px 0;background:transparent;color:var(--text);border:0;font-size:22px}
+    .keyboard{max-width:920px;display:grid;grid-template-columns:repeat(10,1fr);gap:8px;margin-top:22px}
+    .keyboard-key{min-height:46px;background:var(--slate-2);color:var(--text);font-weight:700}
+    .keyboard-key.wide{grid-column:span 2}
+    .empty-state{margin:25px 7vw;padding:34px;color:var(--muted);text-align:center;border:1px solid var(--line);background:var(--slate)}
+    .details{min-height:calc(100 * min(var(--vh,1vh),1vh));padding:120px 7vw 70px;background:linear-gradient(135deg,#101112 15%,#1a1d1f)}
+    .details-content{max-width:720px}
+    .details-content h1{font-size:clamp(50px,6vw,82px)}
+    .details-content p{color:#c5c8c7;font-size:19px;line-height:1.6}
+    .settings-layout{padding:32px 7vw 72px;display:grid;grid-template-columns:minmax(240px,.8fr) minmax(360px,1.55fr);gap:26px}
+    .settings-list,.settings-panel{background:var(--slate);border:1px solid var(--line);padding:12px}
+    .setting-tile{width:100%;display:flex;align-items:center;gap:14px;padding:15px;background:transparent;color:var(--text);text-align:left}
+    .setting-tile.active{background:var(--slate-3);border-left-color:var(--copper)}
+    .setting-tile span{display:block;margin-top:3px;color:var(--muted);font-size:14px}
+    .settings-panel h2{margin:12px;font-size:28px}.settings-panel>p{margin:0 12px 16px;color:var(--muted)}
+    .setting-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 12px;border-top:1px solid var(--line)}
+    .setting-row h3{margin:0;font-size:17px}.setting-row p{margin:4px 0 0;color:var(--muted);font-size:14px}
+    .toggle{width:32px;height:32px;padding:0;border:0;border-radius:50%;background:#35393c;display:grid;place-items:center}
+    .toggle i{display:block;width:14px;height:14px;border-radius:50%;background:#dedbd4;transition:transform .16s ease}
+    .toggle.on{background:var(--copper);border-color:transparent}.toggle.on i{transform:scale(.72);background:#171311}
+    .range{accent-color:var(--copper);width:min(180px,34vw)}
+    .player-view{position:fixed;inset:0;z-index:100;min-height:calc(100 * min(var(--vh,1vh),1vh));background:#070808}
+    .player-box{height:100%;display:grid;place-items:center;background:#111315}
+    .play-mark{width:78px;height:78px;display:grid;place-items:center;background:var(--copper);color:#171311}
+    .player-controls{
+      position:absolute;left:6vw;right:6vw;bottom:36px;padding:18px 20px;background:transparent;
+      border:0;opacity:0;visibility:hidden;transform:translateY(8px);
+      transition:opacity .18s ease,transform .18s ease,visibility .18s ease;
+    }
+    .player-view.controls-open .player-controls{opacity:1;visibility:visible;transform:none}
+    .player-progress{width:100%;accent-color:var(--copper)}
+    .player-bottom{display:flex;justify-content:flex-end;gap:10px;margin-top:13px}
+    .control-cluster{display:flex;gap:8px}
+    .toast{position:fixed;z-index:130;left:50%;bottom:26px;transform:translate(-50%,15px);padding:12px 17px;background:#e9e4dc;color:#1a1613;opacity:0;transition:.18s;pointer-events:none;font-weight:700}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    .hidden{display:none!important}
+    @media(max-width:760px){
+      .control-dock{top:18px;right:18px}.hero{padding:125px 24px 46px;min-height:570px}
+      .content-area,.page-heading,.search-panel,.catalog-grid,.settings-layout,.details{padding-left:24px;padding-right:24px}
+      .settings-layout{grid-template-columns:1fr}.keyboard{grid-template-columns:repeat(7,1fr)}
+      .movie-card{flex-basis:180px}.side-rail{width:270px}
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
+  <script src="/_sdk/6c2ecc939521f244.data_sdk.js" type="text/javascript" integrity="sha512-gRx8s+XsZDN6mSIQu2sivLZysbV0WHhb5kXNUWlgVb5lCMU1foJYukyMEDPv8Tnoocb8iwqB4XdRrWc7oEGzIQ=="></script>
+  <script src="/_sdk/b443124ed7f67435.editing_sdk.js" type="text/javascript" integrity="sha512-oLX1dpTmN2mZumhKQc0okubrUJ8MqA6c5fM5NHln6+9t8KpYrcElyL7NOV7dV6pLkMWSzWZRFAI+WLGRVrl64A=="></script>
+  <script src="/_sdk/ab4336f91e694f96.resizing_sdk.js" type="text/javascript" integrity="sha512-cxmeUrBrNlwwLr+tEu/iwM5F3boeK4qDMoH3QjUPqJptkO5NkaDVhQvyIHIn+3EflI5/uubWzkSA78B1tCswgA=="></script>
+ </head>
+ <body data-template-id="__page-root" style="background: rgb(17, 24, 22);">
+  <div class="app-shell">
+   <div class="control-dock" aria-label="TV controls"><button id="menu-button" class="icon-button focusable" data-focusable="" aria-label="Open navigation menu"><i data-lucide="menu"></i></button> <button id="top-search" class="icon-button focusable" data-focusable="" aria-label="Open search"><i data-lucide="search"></i></button>
+   </div>
+   <aside id="side-rail" class="side-rail" aria-label="Primary navigation">
+    <nav class="space-y-2"><button class="nav-item active focusable" data-view-target="home-view" data-focusable=""><i data-lucide="house"></i><span data-template-id="nav-home" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 600; font-style: normal; font-size: 18px;">Home</span></button> <button class="nav-item focusable" data-view-target="movies-view" data-focusable=""><i data-lucide="clapperboard"></i><span data-template-id="nav-movies" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 600; font-style: normal; font-size: 18px;">Movies</span></button> <button class="nav-item focusable" data-view-target="search-view" data-focusable=""><i data-lucide="search"></i><span data-template-id="nav-search" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 600; font-style: normal; font-size: 18px;">Search</span></button> <button class="nav-item focusable" data-view-target="watchlist-view" data-focusable=""><i data-lucide="bookmark"></i><span data-template-id="nav-watchlist" class="canva-text" style="color: rgb(242, 238, 227); font-weight: 600; font-style: normal; font-size: 18px;">Watchlist</span></button> <button class="nav-item focusable" data-view-target="continue-view" data-focusable=""><i data-lucide="history"></i><span data-template-id="nav-continue" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 600; font-style: normal; font-size: 18px;">Continue Watching</span></button> <button class="nav-item focusable" data-view-target="settings-view" data-focusable=""><i data-lucide="settings-2"></i><span data-template-id="nav-settings" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 600; font-style: normal; font-size: 18px;">Settings</span></button>
+    </nav>
+   </aside>
+   <main>
+    <section id="home-view" class="view active" aria-label="Home">
+     <section class="hero"><img data-template-id="featured-backdrop" class="canva-image hero-image" loading="lazy" src="https://images.pexels.com/photos/2150/sky-space-dark-galaxy.jpg?auto=compress&amp;cs=tinysrgb&amp;w=1920" alt="Capture of the NGC 1672 spiral galaxy showcasing its majestic spiral arms and bright core.">
+      <div class="hero-shade"></div>
+      <div class="hero-content">
+       <div data-template-id="featured-eyebrow" class="canva-text eyebrow" style="color: rgb(184, 117, 95); font-weight: 700; font-style: normal; font-size: 18px; letter-spacing: 0.14rem;">Featured</div>
+       <h1 data-template-id="featured-title" class="canva-text hero-title" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 36px; letter-spacing: -0.05rem; line-height: 0.98;">ECHOES OF ORBIT</h1>
+       <div data-template-id="featured-meta" class="canva-text meta" style="color: rgb(215, 211, 203); font-weight: 500; font-style: normal; font-size: 18px;">2026 • 2h 12m • PG-13 • Science Fiction</div>
+       <p data-template-id="featured-synopsis" class="canva-text synopsis" style="color: rgb(194, 197, 197); font-weight: 400; font-style: normal; font-size: 18px; line-height: 1.55;">When a celestial anomaly bends the edge of time, a solitary navigator races to bring her crew home before the stars go dark.</p>
+       <div class="action-row"><button id="featured-play" class="action-button primary focusable" data-focusable=""><i data-lucide="play"></i><span data-template-id="play-label" class="canva-text" style="color: rgb(23, 19, 17); font-weight: 700; font-style: normal; font-size: 18px;">Play</span></button> <button id="featured-info" class="action-button secondary focusable" data-focusable=""><i data-lucide="info"></i><span data-template-id="more-info-label" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">Details</span></button>
+       </div>
+      </div>
+     </section>
+     <div class="content-area">
+      <section class="rail-section">
+       <div class="section-heading">
+        <h2 data-template-id="continue-heading" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 27px;">Continue Watching</h2>
+       </div>
+       <div class="movie-rail"><button class="movie-card focusable" data-focusable="" data-movie="The Long Way Home" data-genre="Adventure Drama" data-runtime="2h 04m" data-rating="PG-13" data-progress="68"> <img data-template-id="continue-card-1-image" class="canva-image" loading="lazy" src="https://images.pexels.com/photos/4355348/pexels-photo-4355348.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=800" alt="Astronaut in a space suit explores a rocky desert environment at sunset."><span class="movie-info"><span data-template-id="continue-card-1-title" class="canva-text movie-name" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">The Long Way Home</span><span data-template-id="continue-card-1-meta" class="canva-text movie-type" style="color: rgb(156, 161, 164); font-weight: 400; font-style: normal; font-size: 18px;">2h 04m</span><span class="progress-track"><span class="progress-fill" style="width:68%"></span></span></span> </button> <button class="movie-card focusable" data-focusable="" data-movie="Neon District" data-genre="Thriller" data-runtime="1h 48m" data-rating="R" data-progress="34"> <img data-template-id="continue-card-2-image" class="canva-image" loading="lazy" src="https://images.pexels.com/photos/104707/pexels-photo-104707.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=800" alt="A lone figure in a foggy, dimly lit alley creates a mysterious noir atmosphere."><span class="movie-info"><span data-template-id="continue-card-2-title" class="canva-text movie-name" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">Neon District</span><span data-template-id="continue-card-2-meta" class="canva-text movie-type" style="color: rgb(156, 161, 164); font-weight: 400; font-style: normal; font-size: 18px;">1h 48m</span><span class="progress-track"><span class="progress-fill" style="width:34%"></span></span></span> </button> <button class="movie-card focusable" data-focusable="" data-movie="High Country" data-genre="Documentary" data-runtime="1h 31m" data-rating="G" data-progress="81"> <img data-template-id="continue-card-3-image" class="canva-image" loading="lazy" src="https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=800" alt="Capture the serene beauty of Moraine Lake with sunrise reflections in Banff National Park."><span class="movie-info"><span data-template-id="continue-card-3-title" class="canva-text movie-name" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">High Country</span><span data-template-id="continue-card-3-meta" class="canva-text movie-type" style="color: rgb(156, 161, 164); font-weight: 400; font-style: normal; font-size: 18px;">1h 31m</span><span class="progress-track"><span class="progress-fill" style="width:81%"></span></span></span> </button>
+       </div>
+      </section>
+      <section class="rail-section">
+       <div class="section-heading">
+        <h2 data-template-id="recommended-heading" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 27px;">Recommended</h2>
+       </div>
+       <div class="movie-rail"><button class="movie-card focusable" data-focusable="" data-movie="Signal Meridian" data-genre="Science Fiction" data-runtime="2h 12m" data-rating="PG-13"><img data-template-id="recommended-card-1-image" class="canva-image" loading="lazy" src="https://images.pexels.com/photos/7170769/pexels-photo-7170769.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=800" alt="Profile view of a woman in a futuristic astronaut helmet, lit with dramatic lighting."><span class="movie-info"><span data-template-id="recommended-card-1-title" class="canva-text movie-name" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">Signal Meridian</span><span data-template-id="recommended-card-1-meta" class="canva-text movie-type" style="color: rgb(170, 179, 170); font-weight: 400; font-style: normal; font-size: 18px;">2h 12m</span></span></button> <button class="movie-card focusable" data-focusable="" data-movie="Second Exposure" data-genre="Drama" data-runtime="1h 54m" data-rating="PG-13"><img data-template-id="recommended-card-2-image" class="canva-image" loading="lazy" src="https://images.pexels.com/photos/9589958/pexels-photo-9589958.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=800" alt="Artistic silhouette of woman with long hair in warm, dramatic lighting."><span class="movie-info"><span data-template-id="recommended-card-2-title" class="canva-text movie-name" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">Second Exposure</span><span data-template-id="recommended-card-2-meta" class="canva-text movie-type" style="color: rgb(156, 161, 164); font-weight: 400; font-style: normal; font-size: 18px;">1h 54m</span></span></button> <button class="movie-card focusable" data-focusable="" data-movie="After Midnight" data-genre="Mystery Thriller" data-runtime="1h 46m" data-rating="R"><img data-template-id="recommended-card-3-image" class="canva-image" loading="lazy" src="https://images.pexels.com/photos/104707/pexels-photo-104707.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=800" alt="A lone figure in a foggy, dimly lit alley creates a mysterious noir atmosphere."><span class="movie-info"><span data-template-id="recommended-card-3-title" class="canva-text movie-name" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">After Midnight</span><span data-template-id="recommended-card-3-meta" class="canva-text movie-type" style="color: rgb(156, 161, 164); font-weight: 400; font-style: normal; font-size: 18px;">1h 46m</span></span></button> <button class="movie-card focusable" data-focusable="" data-movie="Summit" data-genre="Documentary" data-runtime="1h 31m" data-rating="G"><img data-template-id="recommended-card-4-image" class="canva-image" loading="lazy" src="https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=800" alt="Capture the serene beauty of Moraine Lake with sunrise reflections in Banff National Park."><span class="movie-info"><span data-template-id="recommended-card-4-title" class="canva-text movie-name" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">Summit</span><span data-template-id="recommended-card-4-meta" class="canva-text movie-type" style="color: rgb(156, 161, 164); font-weight: 400; font-style: normal; font-size: 18px;">1h 31m</span></span></button>
+       </div>
+      </section>
+     </div>
+    </section>
+    <section id="movies-view" class="view" aria-label="Movies">
+     <div class="page-heading">
+      <h1 data-template-id="movies-title" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 36px; letter-spacing: -0.05rem;">Movies</h1>
+     </div>
+     <div id="movie-grid" class="catalog-grid"></div>
+    </section>
+    <section id="search-view" class="view" aria-label="Search">
+     <div class="page-heading">
+      <h1 data-template-id="search-title" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 36px; letter-spacing: -0.05rem;">Search</h1>
+     </div>
+     <div class="search-panel"><label data-template-id="search-label" class="canva-text sr-only" for="search-input" style="color: rgb(241, 238, 232); font-weight: 400; font-style: normal; font-size: 18px;">Search movies</label>
+      <div class="search-input-wrap">
+       <i data-lucide="search"></i><input id="search-input" class="search-input focusable" data-focusable="" type="search">
+      </div>
+      <div id="keyboard" class="keyboard" aria-label="On-screen keyboard"></div>
+      <div id="search-results" class="catalog-grid !px-0 !pt-9"></div>
+      <div id="search-empty" data-template-id="search-empty" class="canva-text empty-state hidden" style="color: rgb(156, 161, 164); font-weight: 400; font-style: normal; font-size: 18px;">No matching titles.</div>
+     </div>
+    </section>
+    <section id="watchlist-view" class="view" aria-label="Watchlist">
+     <div class="page-heading">
+      <h1 data-template-id="watchlist-title" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 36px; letter-spacing: -0.05rem;">Watchlist</h1>
+     </div>
+     <div id="watchlist-grid" class="catalog-grid"></div>
+     <div id="watchlist-empty" data-template-id="watchlist-empty" class="canva-text empty-state" style="color: rgb(156, 161, 164); font-weight: 400; font-style: normal; font-size: 18px;">No saved titles.</div>
+    </section>
+    <section id="continue-view" class="view" aria-label="Continue watching">
+     <div class="page-heading">
+      <h1 data-template-id="continue-page-title" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 36px; letter-spacing: -0.05rem;">Continue Watching</h1>
+     </div>
+     <div id="continue-grid" class="catalog-grid"></div>
+    </section>
+    <section id="details-view" class="view details" aria-label="Movie details">
+     <div class="details-content"><button id="details-back" class="icon-button focusable mb-10" data-focusable="" aria-label="Back"><i data-lucide="arrow-left"></i></button>
+      <div id="details-genre" class="eyebrow"></div>
+      <h1 id="details-title"></h1>
+      <div id="details-meta" class="meta"></div>
+      <p id="details-synopsis"></p>
+      <div class="action-row mt-8"><button id="details-play" class="action-button primary focusable" data-focusable=""><i data-lucide="play"></i><span data-template-id="details-play-label" class="canva-text" style="color: rgb(23, 20, 18); font-weight: 700; font-style: normal; font-size: 18px;">Play</span></button> <button id="watchlist-toggle" class="action-button secondary focusable" data-focusable="" aria-label="Toggle watchlist"><i data-lucide="bookmark-plus"></i></button>
+      </div>
+     </div>
+    </section>
+    <section id="settings-view" class="view" aria-label="Settings">
+     <div class="page-heading">
+      <h1 data-template-id="settings-title" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 36px; letter-spacing: -0.05rem;">Settings</h1>
+     </div>
+     <div class="settings-layout">
+      <div class="settings-list"><button class="setting-tile active focusable" data-focusable="" data-setting="Display"><i data-lucide="monitor"></i>
+        <div>
+         <strong data-template-id="setting-display" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">Display</strong>
+        </div></button> <button class="setting-tile focusable" data-focusable="" data-setting="Audio"><i data-lucide="volume-2"></i>
+        <div>
+         <strong data-template-id="setting-audio" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">Audio</strong>
+        </div></button> <button class="setting-tile focusable" data-focusable="" data-setting="Playback"><i data-lucide="circle-play"></i>
+        <div>
+         <strong data-template-id="setting-playback" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">Playback</strong>
+        </div></button> <button class="setting-tile focusable" data-focusable="" data-setting="Accessibility"><i data-lucide="accessibility"></i>
+        <div>
+         <strong data-template-id="setting-accessibility" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">Accessibility</strong>
+        </div></button> <button class="setting-tile focusable" data-focusable="" data-setting="Network"><i data-lucide="wifi"></i>
+        <div>
+         <strong data-template-id="setting-network" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">Network</strong>
+        </div></button> <button class="setting-tile focusable" data-focusable="" data-setting="System"><i data-lucide="info"></i>
+        <div>
+         <strong data-template-id="setting-system" class="canva-text" style="color: rgb(241, 238, 232); font-weight: 700; font-style: normal; font-size: 18px;">System</strong>
+        </div></button>
+      </div>
+      <article class="settings-panel">
+       <h2 id="settings-panel-title">Display</h2>
+       <p id="settings-panel-description">Viewing controls</p>
+       <div id="settings-rows"></div>
+      </article>
+     </div>
+    </section>
+    <section id="player-view" class="view player-view" aria-label="Playback">
+     <div class="player-box">
+      <div class="play-mark">
+       <i id="big-play-icon" data-lucide="play" width="36" height="36"></i>
+      </div>
+     </div>
+     <div class="player-controls"><input id="player-progress" class="player-progress focusable" data-focusable="" aria-label="Playback position" type="range" min="0" max="100" value="0">
+      <div class="player-bottom">
+       <div class="control-cluster"><button id="seek-back" class="icon-button focusable" data-focusable="" aria-label="Seek backward"><i data-lucide="rotate-ccw"></i></button> <button id="play-pause" class="icon-button focusable" data-focusable="" aria-label="Play or pause"><i data-lucide="play"></i></button> <button id="seek-forward" class="icon-button focusable" data-focusable="" aria-label="Seek forward"><i data-lucide="rotate-cw"></i></button> <button id="subtitles-button" class="icon-button focusable" data-focusable="" aria-label="Toggle subtitles"><i data-lucide="captions"></i></button> <button id="audio-button" class="icon-button focusable" data-focusable="" aria-label="Change audio"><i data-lucide="languages"></i></button> <button id="exit-player" class="icon-button focusable" data-focusable="" aria-label="Exit playback"><i data-lucide="x"></i></button>
+       </div>
+      </div>
+     </div>
+    </section>
+   </main>
+   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script>
+    const catalog = [
+      {title:"Signal Meridian",genre:"Science Fiction",runtime:"2h 12m",rating:"PG-13",imageId:"recommended-card-1-image"},
+      {title:"Second Exposure",genre:"Drama",runtime:"1h 54m",rating:"PG-13",imageId:"recommended-card-2-image"},
+      {title:"After Midnight",genre:"Mystery Thriller",runtime:"1h 46m",rating:"R",imageId:"recommended-card-3-image"},
+      {title:"Summit",genre:"Documentary",runtime:"1h 31m",rating:"G",imageId:"recommended-card-4-image"},
+      {title:"The Long Way Home",genre:"Adventure Drama",runtime:"2h 04m",rating:"PG-13",imageId:"continue-card-1-image",progress:68},
+      {title:"Neon District",genre:"Thriller",runtime:"1h 48m",rating:"R",imageId:"continue-card-2-image",progress:34},
+      {title:"High Country",genre:"Documentary",runtime:"1h 31m",rating:"G",imageId:"continue-card-3-image",progress:81}
+    ];
+    let currentMovie=null, returnView="home-view", watchlist=new Set(["Second Exposure"]), isPlaying=false, toastTimer, overlayTimer;
+    const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+
+    function toast(message){const el=$("#toast");el.textContent=message;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),1800)}
+    function openRail(){$("#side-rail").classList.add("open");$("#side-rail .nav-item.active").focus()}
+    function closeRail(){$("#side-rail").classList.remove("open")}
+    function showView(id){
+      $$(".view").forEach(v=>v.classList.toggle("active",v.id===id));
+      $$(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.viewTarget===id));
+      closeRail();
+      if(id==="movies-view") renderCatalog();
+      if(id==="watchlist-view") renderWatchlist();
+      if(id==="continue-view") renderContinue();
+      setTimeout(()=>$("#"+id+" [data-focusable]")?.focus(),20);
+    }
+    function imageFor(movie){return document.querySelector(`[data-template-id="${movie.imageId}"]`)?.src||""}
+    function createCard(movie){
+      const card=document.createElement("button");
+      card.className="movie-card focusable";card.setAttribute("data-focusable","");
+      card.innerHTML='<img loading="lazy" alt=""><span class="movie-info"><span class="movie-name"></span><span class="movie-type"></span></span>';
+      card.querySelector("img").src=imageFor(movie);card.querySelector("img").alt=movie.title+" artwork";
+      card.querySelector(".movie-name").textContent=movie.title;card.querySelector(".movie-type").textContent=movie.runtime;
+      card.addEventListener("click",()=>openDetails(movie));return card;
+    }
+    function renderInto(selector,items){const node=$(selector);node.replaceChildren();items.forEach(item=>node.appendChild(createCard(item)))}
+    function renderCatalog(){renderInto("#movie-grid",catalog)}
+    function renderContinue(){renderInto("#continue-grid",catalog.filter(m=>m.progress))}
+    function renderWatchlist(){
+      const items=catalog.filter(m=>watchlist.has(m.title));renderInto("#watchlist-grid",items);
+      $("#watchlist-empty").classList.toggle("hidden",items.length>0);
+    }
+    function openDetails(movie){
+      currentMovie=movie;returnView=$(".view.active").id;
+      $("#details-title").textContent=movie.title;$("#details-genre").textContent=movie.genre;
+      $("#details-meta").textContent=movie.runtime+"  •  "+movie.rating;
+      $("#details-synopsis").textContent="Select Play to begin watching "+movie.title+".";
+      showView("details-view");
+    }
+    function startPlayback(){
+      if(!currentMovie) currentMovie=catalog[0];
+      $("#player-progress").value=currentMovie.progress||0;isPlaying=false;
+      showView("player-view");revealControls();
+    }
+    function filterSearch(){
+      const term=$("#search-input").value.toLowerCase().trim();
+      const matches=catalog.filter(m=>(m.title+" "+m.genre).toLowerCase().includes(term));
+      renderInto("#search-results",matches);$("#search-empty").classList.toggle("hidden",!!matches.length||!term);
+    }
+    function buildKeyboard(){
+      const wrap=$("#keyboard");
+      [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].forEach(letter=>{
+        const button=document.createElement("button");button.className="keyboard-key focusable";button.setAttribute("data-focusable","");button.textContent=letter;
+        button.addEventListener("click",()=>{$("#search-input").value+=letter;filterSearch()});wrap.appendChild(button);
+      });
+      ["Space","Delete"].forEach(label=>{
+        const button=document.createElement("button");button.className="keyboard-key wide focusable";button.setAttribute("data-focusable","");button.textContent=label;
+        button.addEventListener("click",()=>{$("#search-input").value=label==="Space"?$("#search-input").value+" ":$("#search-input").value.slice(0,-1);filterSearch()});wrap.appendChild(button);
+      });
+    }
+    const settings={
+      Display:[["Ambient brightness","toggle",true],["Interface scale","range",65],["Motion reduction","toggle",false]],
+      Audio:[["System sounds","toggle",true],["Dialogue boost","toggle",false],["Output level","range",72]],
+      Playback:[["Autoplay next","toggle",true],["Preview trailers","toggle",false]],
+      Accessibility:[["High contrast focus","toggle",true],["Audio descriptions","toggle",false]],
+      Network:[["Wi-Fi","toggle",true],["Bandwidth saver","toggle",false]],
+      System:[["System version","info","Current"],["Storage","info","Available"]]
+    };
+    function renderSettings(name){
+      $("#settings-panel-title").textContent=name;$("#settings-panel-description").textContent="Settings";
+      const rows=$("#settings-rows");rows.replaceChildren();
+      settings[name].forEach(([label,type,value])=>{
+        const row=document.createElement("div");row.className="setting-row";row.innerHTML="<div><h3></h3></div>";row.querySelector("h3").textContent=label;
+        if(type==="toggle"){
+          const btn=document.createElement("button");btn.className="toggle focusable"+(value?" on":"");btn.setAttribute("data-focusable","");btn.setAttribute("aria-label",label);btn.setAttribute("aria-pressed",value);btn.innerHTML="<i></i>";
+          btn.addEventListener("click",()=>{const next=!btn.classList.contains("on");btn.classList.toggle("on",next);btn.setAttribute("aria-pressed",next)});row.appendChild(btn);
+        } else if(type==="range"){
+          const input=document.createElement("input");input.className="range focusable";input.setAttribute("data-focusable","");input.type="range";input.value=value;input.setAttribute("aria-label",label);row.appendChild(input);
+        } else {const text=document.createElement("span");text.textContent=value;text.style.color="var(--muted)";row.appendChild(text)}
+        rows.appendChild(row);
+      });
+    }
+    function revealControls(){
+      const view=$("#player-view");if(!view.classList.contains("active"))return;
+      view.classList.add("controls-open");clearTimeout(overlayTimer);
+      overlayTimer=setTimeout(()=>view.classList.remove("controls-open"),4200);
+    }
+    function moveFocus(direction){
+      const items=$$("[data-focusable]").filter(el=>!el.closest(".view:not(.active)")&&!el.closest(".side-rail:not(.open)")&&!el.disabled);
+      const current=document.activeElement;if(!items.includes(current)){items[0]?.focus();return}
+      const rect=current.getBoundingClientRect(),cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+      const candidates=items.filter(item=>{
+        if(item===current)return false;const r=item.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
+        return (direction==="ArrowLeft"&&x<cx-5)||(direction==="ArrowRight"&&x>cx+5)||(direction==="ArrowUp"&&y<cy-5)||(direction==="ArrowDown"&&y>cy+5);
+      });
+      candidates.sort((a,b)=>{const ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();return Math.hypot(ar.left+ar.width/2-cx,ar.top+ar.height/2-cy)-Math.hypot(br.left+br.width/2-cx,br.top+br.height/2-cy)});
+      candidates[0]?.focus();
+    }
+    document.addEventListener("DOMContentLoaded",()=>{
+      lucide.createIcons();buildKeyboard();renderSettings("Display");
+      $("#menu-button").addEventListener("click",openRail);$("#top-search").addEventListener("click",()=>showView("search-view"));
+      $$(".nav-item").forEach(btn=>btn.addEventListener("click",()=>showView(btn.dataset.viewTarget)));
+      $("#featured-info").addEventListener("click",()=>openDetails({title:"ECHOES OF ORBIT",genre:"Science Fiction",runtime:"2h 12m",rating:"PG-13"}));
+      $("#featured-play").addEventListener("click",()=>{currentMovie={title:"ECHOES OF ORBIT",progress:0};startPlayback()});
+      $$(".movie-card").forEach(card=>card.addEventListener("click",()=>openDetails({title:card.dataset.movie,genre:card.dataset.genre,runtime:card.dataset.runtime,rating:card.dataset.rating,progress:Number(card.dataset.progress||0)})));
+      $("#details-back").addEventListener("click",()=>showView(returnView));
+      $("#details-play").addEventListener("click",startPlayback);
+      $("#watchlist-toggle").addEventListener("click",()=>{if(!currentMovie)return;const enabled=!watchlist.has(currentMovie.title);enabled?watchlist.add(currentMovie.title):watchlist.delete(currentMovie.title);toast(enabled?"Saved to Watchlist":"Removed from Watchlist")});
+      $("#search-input").addEventListener("input",filterSearch);
+      $$(".setting-tile").forEach(tile=>tile.addEventListener("click",()=>{$$(".setting-tile").forEach(t=>t.classList.remove("active"));tile.classList.add("active");renderSettings(tile.dataset.setting)}));
+      $("#play-pause").addEventListener("click",()=>{isPlaying=!isPlaying;$("#play-pause").innerHTML='<i data-lucide="'+(isPlaying?"pause":"play")+'"></i>';lucide.createIcons();toast(isPlaying?"Playing":"Paused")});
+      $("#seek-back").addEventListener("click",()=>$("#player-progress").value=Math.max(0,+$("#player-progress").value-10));
+      $("#seek-forward").addEventListener("click",()=>$("#player-progress").value=Math.min(100,+$("#player-progress").value+10));
+      $("#subtitles-button").addEventListener("click",()=>toast("Subtitles enabled"));
+      $("#audio-button").addEventListener("click",()=>toast("Audio selection"));
+      $("#exit-player").addEventListener("click",()=>showView("details-view"));
+      $("#player-view").addEventListener("click",revealControls);
+      document.addEventListener("keydown",event=>{
+        if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(event.key)){event.preventDefault();moveFocus(event.key)}
+        if(event.key==="Escape"||event.key==="Backspace"){
+          if($("#side-rail").classList.contains("open"))closeRail();
+          else if($("#player-view").classList.contains("active"))showView("details-view");
+          else if($("#details-view").classList.contains("active"))showView(returnView);
+          else if($(".view.active").id!=="home-view")showView("home-view");
+          event.preventDefault();
+        }
+      });
+    });
+  </script>
+ 
+</body></html>

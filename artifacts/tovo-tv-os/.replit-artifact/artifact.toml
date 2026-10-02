@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Tovo TV OS"
+description = "A remote-friendly TV interface prototype for browsing a catalog, searching titles, managing a watchlist, and testing a licensed playback source."
+version = "1.0.0"
+id = "artifacts/tovo-tv-os"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23026
+
+[services.development]
+run = "pnpm --filter @workspace/tovo-tv-os run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/tovo-tv-os", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/tovo-tv-os/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23026"
+BASE_PATH = "/"
