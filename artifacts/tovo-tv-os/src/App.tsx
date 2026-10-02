@@ -152,7 +152,7 @@ function App() {
   const [playerControls, setPlayerControls] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const toastTimer = useRef<number | undefined>(undefined);
-  const searchRef = useRef<HTMLInputElement>(null);
+  const playerVideoRef = useRef<HTMLVideoElement>(null);
 
   const notify = useCallback((message: string) => {
     setToast(message);
@@ -169,10 +169,16 @@ function App() {
   }, [settings]);
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
 
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>('[data-remote-start]')?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [view, category, selected, playing]);
+
   const setPage = (page: string) => {
     setSelected(null);
     setView(page);
-    if (page === 'Search') window.setTimeout(() => searchRef.current?.focus(), 80);
     window.scrollTo({ top: 0, behavior: settings.reducedMotion ? 'auto' : 'smooth' });
   };
 
@@ -217,35 +223,29 @@ function App() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' || event.key === 'Backspace') {
-        if ((event.target as HTMLElement)?.tagName === 'INPUT' && event.key === 'Backspace') return;
+      const supportedKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Escape'];
+      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || !supportedKeys.includes(event.key)) {
+        event.preventDefault();
+        return;
+      }
+      if (event.key === 'Escape') {
         event.preventDefault();
         goBack();
         return;
       }
-      if (playing && event.key === ' ') {
+      if (event.key === 'Enter') return;
+      if (event.target instanceof HTMLInputElement && event.target.type === 'range' &&
+        (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) return;
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' ||
+        event.key === 'ArrowUp' || event.key === 'ArrowDown') {
         event.preventDefault();
-        const video = document.querySelector<HTMLVideoElement>('[data-testid="native-player"]');
-        if (video) {
-          if (video.paused) void video.play();
-          else video.pause();
-        } else setPlayerControls((open) => !open);
-        return;
       }
-      if (event.key === '/' && !playing) {
-        event.preventDefault();
-        setPage('Search');
-        return;
-      }
-      if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) return;
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
       const focusable = Array.from(document.querySelectorAll<HTMLElement>(
-        'button:not(:disabled), input:not(:disabled), [tabindex="0"]',
+        'button:not(:disabled), input:not(:disabled):not([readonly]), [tabindex="0"]',
       )).filter((el) => el.getClientRects().length && !el.closest('[hidden]'));
       const current = document.activeElement as HTMLElement;
       if (!focusable.includes(current)) {
-        focusable[0]?.focus();
-        event.preventDefault();
+        document.querySelector<HTMLElement>('[data-remote-start]')?.focus();
         return;
       }
       const currentBox = current.getBoundingClientRect();
@@ -262,7 +262,6 @@ function App() {
       }).filter((candidate) => candidate.primary > 1)
         .sort((a, b) => (a.primary + a.cross * 2.5) - (b.primary + b.cross * 2.5));
       if (candidates[0]) {
-        event.preventDefault();
         candidates[0].el.focus();
         candidates[0].el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: settings.reducedMotion ? 'auto' : 'smooth' });
       }
@@ -278,8 +277,8 @@ function App() {
   const continueWatching = catalog.filter((movie) => movie.progress);
   const savedMovies = catalog.filter((movie) => watchlist.includes(movie.id));
 
-  const movieCard = (movie: Movie, progress = false) => (
-    <button className="movie-card" key={movie.id} data-testid={`card-movie-${movie.id}`} onClick={() => openDetails(movie)} aria-label={`View ${movie.title}`}>
+  const movieCard = (movie: Movie, progress = false, remoteStart = false) => (
+    <button className="movie-card" key={movie.id} data-testid={`card-movie-${movie.id}`} data-remote-start={remoteStart ? '' : undefined} onClick={() => openDetails(movie)} aria-label={`View ${movie.title}`}>
       <img src={movie.image} alt="" loading="lazy" />
       <span className="movie-info">
         <span className="movie-name">{movie.title}</span>
@@ -297,6 +296,14 @@ function App() {
   );
 
   const onScreenKeys = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const urlKeyboardRows = [
+    ['https://', 'www.', '.com', '.net', '.org'],
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+    ['Z', 'X', 'C', 'V', 'B', 'N', 'M'],
+    [':', '/', '.', '-', '_', '?', '&', '=', '%', '#', '@'],
+  ];
   const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => setSettings((current) => ({ ...current, [key]: value }));
   const selectedCategory = settingCategories.find((item) => item.id === category) ?? settingCategories[0];
   const CategoryIcon = selectedCategory.icon;
@@ -307,13 +314,34 @@ function App() {
         <div className="setting-row">
           <div><h3>Direct video URL</h3><p>Use a video URL you have permission to play. No third-party stream sources are included.</p></div>
           <div className="setting-input">
-            <input aria-label="Direct video URL" data-testid="input-playback-url" type="url" placeholder="https://example.com/movie.mp4" value={urlDraft} onChange={(event) => setUrlDraft(event.target.value)} />
+            <input aria-label="Direct video URL" data-testid="input-playback-url" type="url" placeholder="Use the on-screen keyboard below" value={urlDraft} readOnly tabIndex={-1} />
             <button data-testid="button-save-playback-url" onClick={() => {
               const trimmed = urlDraft.trim();
               if (trimmed && !/^https?:\/\//i.test(trimmed)) { notify('Enter a complete http or https URL'); return; }
               updateSetting('playbackUrl', trimmed);
               notify(trimmed ? 'Playback source saved' : 'Playback source cleared');
             }}>Save</button>
+          </div>
+        </div>
+        <div className="remote-url-keyboard" aria-label="On-screen playback URL keyboard" data-testid="playback-url-keyboard">
+          <p className="keyboard-hint">Choose characters with the arrows, then press Enter. Select Save when the URL is complete.</p>
+          {urlKeyboardRows.map((row, rowIndex) => (
+            <div className="remote-url-keyboard-row" key={rowIndex}>
+              {row.map((key, keyIndex) => (
+                <button
+                  className={`keyboard-key ${key.length > 1 ? 'shortcut' : ''}`}
+                  key={key}
+                  type="button"
+                  data-testid={`url-key-row-${rowIndex}-item-${keyIndex}`}
+                  data-remote-start={category === 'Playback' && rowIndex === 0 && key === 'https://' ? '' : undefined}
+                  onClick={() => setUrlDraft((draft) => draft + key.toLowerCase())}
+                >{key}</button>
+              ))}
+            </div>
+          ))}
+          <div className="remote-url-keyboard-row url-edit-keys">
+            <button className="keyboard-key wide" type="button" data-testid="url-key-delete" onClick={() => setUrlDraft((draft) => draft.slice(0, -1))}>Delete</button>
+            <button className="keyboard-key wide" type="button" data-testid="url-key-clear" onClick={() => setUrlDraft('')}>Clear</button>
           </div>
         </div>
         <div className="setting-row"><div><h3>Autoplay</h3><p>Start configured video as soon as playback opens.</p></div><button className={`toggle ${settings.autoplay ? 'on' : ''}`} aria-label="Toggle autoplay" aria-pressed={settings.autoplay} data-testid="toggle-autoplay" onClick={() => updateSetting('autoplay', !settings.autoplay)}><i /></button></div>
@@ -331,7 +359,7 @@ function App() {
       <>
         <div className="setting-row"><div><h3>Reduced motion</h3><p>Reduce animated transitions and smooth scrolling.</p></div><button className={`toggle ${settings.reducedMotion ? 'on' : ''}`} aria-label="Toggle reduced motion" aria-pressed={settings.reducedMotion} data-testid="toggle-reduced-motion" onClick={() => updateSetting('reducedMotion', !settings.reducedMotion)}><i /></button></div>
         <div className="setting-row"><div><h3>Captions preference</h3><p>Request captions when the configured video provides a caption track.</p></div><button className={`toggle ${settings.captions ? 'on' : ''}`} aria-label="Toggle captions preference" aria-pressed={settings.captions} data-testid="toggle-captions" onClick={() => updateSetting('captions', !settings.captions)}><i /></button></div>
-        <div className="setting-row"><div><h3>Remote navigation</h3><p>Use arrow keys to move focus, Enter to select, Escape or Backspace to go back.</p></div><Keyboard size={19} color="#cf9278" /></div>
+        <div className="setting-row"><div><h3>Remote navigation</h3><p>Use the arrow keys to move focus, Enter to select, and Escape to go back. Search and playback URL entry use on-screen keyboards.</p></div><Keyboard size={19} color="#cf9278" /></div>
       </>
     );
     if (category === 'About') return (
@@ -392,7 +420,7 @@ function App() {
                 <div className="meta"><span>{featured.year}</span><span className="meta-dot">•</span><span>{featured.runtime}</span><span className="meta-dot">•</span><span>{featured.rating}</span><span className="meta-dot">•</span><span>{featured.genre}</span></div>
                 <p className="synopsis">{featured.synopsis}</p>
                 <div className="action-row">
-                  <button className="action-button primary" data-testid="button-featured-play" onClick={() => startPlayback(featured)}><Play size={18} fill="currentColor" /> Play</button>
+              <button className="action-button primary" data-testid="button-featured-play" data-remote-start="" onClick={() => startPlayback(featured)}><Play size={18} fill="currentColor" /> Play</button>
                   <button className="action-button secondary" data-testid="button-featured-details" onClick={() => openDetails(featured)}><Info size={18} /> Details</button>
                   <button className="action-button secondary" data-testid="button-featured-list" onClick={() => toggleWatchlist(featured)}><Bookmark size={17} fill={watchlist.includes(featured.id) ? 'currentColor' : 'none'} /> {watchlist.includes(featured.id) ? 'In My List' : 'My List'}</button>
                 </div>
@@ -412,9 +440,9 @@ function App() {
             <div className="page-heading"><div className="eyebrow">Find your next watch</div><h1>Search</h1><p>Titles, genres, a mood. Start anywhere.</p></div>
             <div className="search-panel">
               <label className="sr-only" htmlFor="title-search">Search titles and genres</label>
-              <div className="search-input-wrap"><Search size={22} /><input ref={searchRef} id="title-search" className="search-input" type="search" placeholder="Search titles and genres" value={search} onChange={(event) => setSearch(event.target.value)} data-testid="input-search" /><button className="icon-button" aria-label="Clear search" data-testid="button-clear-search" onClick={() => { setSearch(''); searchRef.current?.focus(); }}><X size={18} /></button></div>
+              <div className="search-input-wrap"><Search size={22} /><input id="title-search" className="search-input" type="search" placeholder="Choose letters below" value={search} readOnly tabIndex={-1} data-testid="input-search" /><button className="icon-button" aria-label="Clear search" data-testid="button-clear-search" onClick={() => setSearch('')}><X size={18} /></button></div>
               <div className="keyboard" aria-label="On-screen keyboard" data-testid="on-screen-keyboard">
-                {onScreenKeys.map((key) => <button className="keyboard-key" key={key} data-testid={`keyboard-key-${key.toLowerCase()}`} onClick={() => setSearch((query) => query + key.toLowerCase())}>{key}</button>)}
+                {onScreenKeys.map((key, index) => <button className="keyboard-key" key={key} data-testid={`keyboard-key-${key.toLowerCase()}`} data-remote-start={index === 0 ? '' : undefined} onClick={() => setSearch((query) => query + key.toLowerCase())}>{key}</button>)}
                 <button className="keyboard-key wide" data-testid="keyboard-space" onClick={() => setSearch((query) => `${query} `)}>Space</button>
                 <button className="keyboard-key wide" data-testid="keyboard-backspace" onClick={() => setSearch((query) => query.slice(0, -1))}>Delete</button>
               </div>
@@ -429,8 +457,8 @@ function App() {
         {view === 'My List' && (
           <section className="view-fade" data-testid="screen-my-list">
             <div className="page-heading"><div className="eyebrow">Saved for later</div><h1>My List</h1><p>Your shortlist, ready when you are.</p></div>
-            {savedMovies.length > 0 ? <div className="catalog-grid" data-testid="my-list-grid">{savedMovies.map((movie) => movieCard(movie))}</div> : (
-              <div className="empty-state" data-testid="empty-my-list"><Bookmark size={26} /><h2>Your list is a blank canvas.</h2><p>Save a title from its details or the featured story and it will be waiting here.</p><button className="action-button secondary" data-testid="button-explore-catalog" onClick={() => setPage('Home')}>Explore titles</button></div>
+            {savedMovies.length > 0 ? <div className="catalog-grid" data-testid="my-list-grid">{savedMovies.map((movie, index) => movieCard(movie, false, index === 0))}</div> : (
+              <div className="empty-state" data-testid="empty-my-list"><Bookmark size={26} /><h2>Your list is a blank canvas.</h2><p>Save a title from its details or the featured story and it will be waiting here.</p><button className="action-button secondary" data-testid="button-explore-catalog" data-remote-start="" onClick={() => setPage('Home')}>Explore titles</button></div>
             )}
           </section>
         )}
@@ -445,7 +473,7 @@ function App() {
               <div className="detail-facts"><span>{selected.year}</span><span>{selected.runtime}</span><span>{selected.rating}</span><span>Feature film</span></div>
               <p>{selected.synopsis}</p>
               <div className="action-row">
-                <button className="action-button primary" data-testid="button-details-play" onClick={() => startPlayback(selected)}><Play size={18} fill="currentColor" /> Play</button>
+              <button className="action-button primary" data-testid="button-details-play" data-remote-start="" onClick={() => startPlayback(selected)}><Play size={18} fill="currentColor" /> Play</button>
                 <button className="action-button secondary" data-testid="button-details-list" onClick={() => toggleWatchlist(selected)}><Bookmark size={17} fill={watchlist.includes(selected.id) ? 'currentColor' : 'none'} /> {watchlist.includes(selected.id) ? 'In My List' : 'Add to My List'}</button>
               </div>
               <div className="detail-note">Available to browse in this prototype. Playback requires a direct video URL you are authorized to use.</div>
@@ -459,7 +487,7 @@ function App() {
             <div className="settings-layout">
               <div className="settings-list" role="tablist" aria-label="Settings categories">
                 {settingCategories.map(({ id, icon: Icon, description }) => (
-                  <button key={id} role="tab" aria-selected={category === id} className={`setting-tile ${category === id ? 'active' : ''}`} data-testid={`settings-tab-${id.toLowerCase()}`} onClick={() => setCategory(id)}>
+                  <button key={id} role="tab" aria-selected={category === id} className={`setting-tile ${category === id ? 'active' : ''}`} data-testid={`settings-tab-${id.toLowerCase()}`} data-remote-start={category === id ? '' : undefined} onClick={() => setCategory(id)}>
                     <Icon size={19} /><span>{id}</span><small>{description}</small>
                   </button>
                 ))}
@@ -484,11 +512,12 @@ function App() {
           <div className="player-box">
             {settings.playbackUrl ? (
               <video
+                ref={playerVideoRef}
                 data-testid="native-player"
                 src={settings.playbackUrl}
-                controls
                 autoPlay={settings.autoplay}
                 playsInline
+                tabIndex={-1}
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
                 onClick={(event) => event.stopPropagation()}
@@ -501,7 +530,7 @@ function App() {
                 <h1>Ready when you are.</h1>
                 <p>Tovo doesn't bundle streams. Add a direct video URL you are authorized to play in Settings, then come back here to watch it in the native player.</p>
                 <div className="action-row" style={{ justifyContent: 'center' }}>
-                  <button className="action-button primary" data-testid="button-configure-playback" onClick={(event) => { event.stopPropagation(); setPlaying(null); setCategory('Playback'); setPage('Settings'); }}>Configure playback</button>
+                  <button className="action-button primary" data-testid="button-configure-playback" data-remote-start="" onClick={(event) => { event.stopPropagation(); setPlaying(null); setCategory('Playback'); setPage('Settings'); }}>Configure playback</button>
                   <button className="action-button secondary" data-testid="button-player-back" onClick={(event) => { event.stopPropagation(); goBack(); }}>Back to browsing</button>
                 </div>
               </div>
@@ -509,7 +538,19 @@ function App() {
           </div>
           {settings.playbackUrl && (
             <div className="player-controls" onClick={(event) => event.stopPropagation()}>
-              <div className="player-bottom"><span>{isPlaying ? 'Playing' : 'Paused'} · {playing.title}</span><div className="player-control-buttons"><button className="icon-button" aria-label="Back to browsing" data-testid="button-player-exit" onClick={goBack}><ArrowLeft size={18} /></button></div></div>
+              <div className="player-bottom">
+                <span>{isPlaying ? 'Playing' : 'Paused'} · {playing.title}</span>
+                <div className="player-control-buttons">
+                  <button className="icon-button" aria-label="Rewind 10 seconds" data-testid="button-player-rewind" onClick={() => { if (playerVideoRef.current) playerVideoRef.current.currentTime = Math.max(0, playerVideoRef.current.currentTime - 10); }}>−10s</button>
+                  <button className="action-button primary" aria-label={isPlaying ? 'Pause playback' : 'Start playback'} data-testid="button-player-toggle" data-remote-start="" onClick={() => {
+                    const video = playerVideoRef.current;
+                    if (video?.paused) void video.play().catch(() => notify('Playback could not start. Check the video URL.'));
+                    else video?.pause();
+                  }}>{isPlaying ? 'Pause' : 'Play'}</button>
+                  <button className="icon-button" aria-label="Skip ahead 10 seconds" data-testid="button-player-forward" onClick={() => { if (playerVideoRef.current) playerVideoRef.current.currentTime = Math.min(playerVideoRef.current.duration || Infinity, playerVideoRef.current.currentTime + 10); }}>+10s</button>
+                  <button className="icon-button" aria-label="Back to browsing" data-testid="button-player-exit" onClick={goBack}><ArrowLeft size={18} /></button>
+                </div>
+              </div>
             </div>
           )}
         </section>

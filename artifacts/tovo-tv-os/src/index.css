@@ -193,6 +193,12 @@ main { min-height: 100dvh; margin-left: 88px; }
 .setting-input { width:min(100%,460px); display:flex; gap:8px; }
 .setting-input input { min-width:0; flex:1; height:42px; padding:0 12px; color:var(--text); border:1px solid #46534a; border-radius:3px; background:#111816; font-size:13px; }
 .setting-input button { flex:0 0 auto; padding:0 14px; color:#201713; border:0; border-radius:3px; background:var(--copper); font-weight:700; }
+.remote-url-keyboard { margin: 8px 0 22px; padding: 14px; border: 1px solid rgba(242,238,227,.09); background: rgba(7,11,9,.35); }
+.keyboard-hint { margin: 0 0 10px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+.remote-url-keyboard-row { display: flex; justify-content: center; gap: 6px; margin-top: 6px; }
+.remote-url-keyboard-row .keyboard-key { flex: 1 1 0; min-width: 0; min-height: 38px; padding: 0 5px; font-size: 12px; }
+.remote-url-keyboard-row .keyboard-key.shortcut { flex: 1.6 1 0; }
+.remote-url-keyboard-row.url-edit-keys .keyboard-key { flex: 0 1 180px; }
 .range { width:min(180px,34vw); accent-color:var(--copper); }
 .source-status { display:flex; flex:0 0 auto; align-items:center; gap:7px; color:#d2c5b7; font-size:12px; }
 .settings-footer { margin:18px 0 0; color:#7f8b82; font-size:12px; }
@@ -211,6 +217,7 @@ main { min-height: 100dvh; margin-left: 88px; }
 .player-progress { width:100%; accent-color:var(--copper); }
 .player-bottom { display:flex; justify-content:space-between; align-items:center; margin-top:7px; color:#d5d9d2; font-size:13px; }
 .player-control-buttons { display:flex; gap:8px; }
+.player-control-buttons .action-button { min-height: 44px; }
 .toast { position:fixed; z-index:150; left:50%; bottom:26px; padding:12px 18px; color:#211a16; background:#eee6d9; opacity:0; transform:translate(-50%,12px); pointer-events:none; transition:opacity .2s,transform .2s; font-size:14px; font-weight:700; }
 .toast.show { opacity:1; transform:translate(-50%,0); }
 .hint { padding:16px 6vw 30px; color:#78847b; font-size:12px; }
