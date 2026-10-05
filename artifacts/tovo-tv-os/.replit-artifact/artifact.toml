@@ -1,7 +1,7 @@
 kind = "web"
 previewPath = "/"
 title = "Tovo TV OS"
-description = "A remote-friendly TV interface prototype for browsing a catalog, searching titles, managing a watchlist, and testing a licensed playback source."
+description = "A remote-friendly TV app for browsing and playing public-domain feature films from Internet Archive, with saved lists and playback settings."
 version = "1.0.0"
 id = "artifacts/tovo-tv-os"
 router = "path"

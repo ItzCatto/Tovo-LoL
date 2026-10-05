@@ -1,22 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Accessibility, ArrowLeft, Bookmark, Check, ChevronDown, Clapperboard,
-  Film, Headphones, Home, Info, Keyboard, Monitor, Play, Search, Settings2,
-  ShieldCheck, SlidersHorizontal, Volume2, X,
+  Home, Info, Keyboard, Monitor, Play, Search, Settings2, ShieldCheck,
+  Volume2, VolumeX, X,
 } from 'lucide-react';
-
-type Movie = {
-  id: string;
-  title: string;
-  genre: string;
-  runtime: string;
-  rating: string;
-  year: string;
-  image: string;
-  synopsis: string;
-  progress?: number;
-  featured?: boolean;
-};
+import { getPublicDomainMovies, type Movie } from './lib/archive';
 
 type Settings = {
   playbackUrl: string;
@@ -24,94 +12,12 @@ type Settings = {
   autoplay: boolean;
   reducedMotion: boolean;
   volume: number;
+  muted: boolean;
+  resumePlayback: boolean;
+  theme: 'cinema' | 'warm' | 'high-contrast';
+  posterSize: 'regular' | 'large';
+  largerText: boolean;
 };
-
-const catalog: Movie[] = [
-  {
-    id: 'echoes-orbit',
-    title: 'Echoes of Orbit',
-    genre: 'Science Fiction',
-    runtime: '2h 12m',
-    rating: 'PG-13',
-    year: '2026',
-    image: 'https://images.pexels.com/photos/2150/sky-space-dark-galaxy.jpg?auto=compress&cs=tinysrgb&w=1920',
-    synopsis: 'When a celestial anomaly bends the edge of time, a solitary navigator races to bring her crew home before the stars go dark.',
-    featured: true,
-  },
-  {
-    id: 'long-way-home',
-    title: 'The Long Way Home',
-    genre: 'Adventure · Drama',
-    runtime: '2h 04m',
-    rating: 'PG-13',
-    year: '2025',
-    image: 'https://images.pexels.com/photos/4355348/pexels-photo-4355348.jpeg?auto=compress&cs=tinysrgb&w=800',
-    synopsis: 'A pilot stranded at the edge of a quiet planet finds a reason to chart the impossible route back.',
-    progress: 68,
-  },
-  {
-    id: 'neon-district',
-    title: 'Neon District',
-    genre: 'Thriller',
-    runtime: '1h 48m',
-    rating: 'R',
-    year: '2025',
-    image: 'https://images.pexels.com/photos/104707/pexels-photo-104707.jpeg?auto=compress&cs=tinysrgb&w=800',
-    synopsis: 'One last night shift in a rain-soaked city turns into a pursuit through the places nobody remembers.',
-    progress: 34,
-  },
-  {
-    id: 'high-country',
-    title: 'High Country',
-    genre: 'Documentary',
-    runtime: '1h 31m',
-    rating: 'G',
-    year: '2024',
-    image: 'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=800',
-    synopsis: 'A patient portrait of the mountain communities who live by the changing light of the high alpine.',
-    progress: 81,
-  },
-  {
-    id: 'signal-meridian',
-    title: 'Signal Meridian',
-    genre: 'Science Fiction',
-    runtime: '2h 12m',
-    rating: 'PG-13',
-    year: '2026',
-    image: 'https://images.pexels.com/photos/7170769/pexels-photo-7170769.jpeg?auto=compress&cs=tinysrgb&w=800',
-    synopsis: 'A deep-space signal carries a voice no one expected to hear again.',
-  },
-  {
-    id: 'second-exposure',
-    title: 'Second Exposure',
-    genre: 'Drama',
-    runtime: '1h 54m',
-    rating: 'PG-13',
-    year: '2025',
-    image: 'https://images.pexels.com/photos/9589958/pexels-photo-9589958.jpeg?auto=compress&cs=tinysrgb&w=800',
-    synopsis: 'An archival photographer returns to her hometown and discovers the image that changed everything.',
-  },
-  {
-    id: 'after-midnight',
-    title: 'After Midnight',
-    genre: 'Mystery · Thriller',
-    runtime: '1h 46m',
-    rating: 'R',
-    year: '2024',
-    image: 'https://images.pexels.com/photos/104707/pexels-photo-104707.jpeg?auto=compress&cs=tinysrgb&w=800',
-    synopsis: 'A radio host takes a call from a missing caller, live, three years after the line went quiet.',
-  },
-  {
-    id: 'summit',
-    title: 'Summit',
-    genre: 'Documentary',
-    runtime: '1h 31m',
-    rating: 'G',
-    year: '2024',
-    image: 'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=800',
-    synopsis: 'A small team makes one final ascent to document a glacier before the season changes.',
-  },
-];
 
 const defaultSettings: Settings = {
   playbackUrl: '',
@@ -119,6 +25,11 @@ const defaultSettings: Settings = {
   autoplay: true,
   reducedMotion: false,
   volume: 72,
+  muted: false,
+  resumePlayback: true,
+  theme: 'cinema',
+  posterSize: 'regular',
+  largerText: false,
 };
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -130,12 +41,23 @@ function readStorage<T>(key: string, fallback: T): T {
   }
 }
 
+function formatPlayerTime(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds <= 0) return '0:00';
+  const wholeSeconds = Math.floor(seconds);
+  const minutes = Math.floor(wholeSeconds / 60);
+  const remainingSeconds = wholeSeconds % 60;
+  const hours = Math.floor(minutes / 60);
+  return hours > 0
+    ? `${hours}:${String(minutes % 60).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`
+    : `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
+}
+
 const settingCategories = [
-  { id: 'Display', icon: Monitor, description: 'Picture and on-screen preferences' },
-  { id: 'Audio', icon: Volume2, description: 'Sound and listening preferences' },
-  { id: 'Playback', icon: Clapperboard, description: 'Your playback source and controls' },
-  { id: 'Accessibility', icon: Accessibility, description: 'Make the experience yours' },
-  { id: 'About', icon: Info, description: 'About this Tovo prototype' },
+  { id: 'Display', icon: Monitor, description: 'Theme and poster size' },
+  { id: 'Audio', icon: Volume2, description: 'Volume and mute' },
+  { id: 'Playback', icon: Clapperboard, description: 'Autoplay, resume, and source' },
+  { id: 'Accessibility', icon: Accessibility, description: 'Motion, captions, and text size' },
+  { id: 'About', icon: Info, description: 'Film sources and rights' },
 ];
 
 function App() {
@@ -143,7 +65,21 @@ function App() {
   const [previousView, setPreviousView] = useState('Home');
   const [selected, setSelected] = useState<Movie | null>(null);
   const [playing, setPlaying] = useState<Movie | null>(null);
+  const [catalog, setCatalog] = useState<Movie[]>(() => readStorage('tovo-public-domain-catalog', [] as Movie[]));
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogLoadingMore, setCatalogLoadingMore] = useState(false);
+  const [catalogError, setCatalogError] = useState('');
+  const [catalogPage, setCatalogPage] = useState(1);
+  const [catalogTotal, setCatalogTotal] = useState(0);
+  const [searchResults, setSearchResults] = useState<Movie[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [searchHasMore, setSearchHasMore] = useState(false);
+  const [searchPage, setSearchPage] = useState(1);
+  const [searchTotal, setSearchTotal] = useState(0);
   const [watchlist, setWatchlist] = useState<string[]>(() => readStorage('tovo-watchlist', []));
+  const [watchlistMovies, setWatchlistMovies] = useState<Movie[]>(() => readStorage('tovo-watchlist-movies', []));
+  const [watchProgress, setWatchProgress] = useState<Record<string, number>>(() => readStorage('tovo-watch-progress', {}));
   const [settings, setSettings] = useState<Settings>(() => ({ ...defaultSettings, ...readStorage('tovo-settings', defaultSettings) }));
   const [category, setCategory] = useState('Display');
   const [search, setSearch] = useState('');
@@ -151,7 +87,10 @@ function App() {
   const [toast, setToast] = useState('');
   const [playerControls, setPlayerControls] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [playerTime, setPlayerTime] = useState(0);
+  const [playerDuration, setPlayerDuration] = useState(0);
   const toastTimer = useRef<number | undefined>(undefined);
+  const searchRequestRef = useRef<AbortController | null>(null);
   const playerVideoRef = useRef<HTMLVideoElement>(null);
 
   const notify = useCallback((message: string) => {
@@ -161,13 +100,96 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const load = async () => {
+      setCatalogLoading(true);
+      setCatalogError('');
+      try {
+        const result = await getPublicDomainMovies({ page: 1, signal: controller.signal });
+        setCatalog(result.movies);
+        setCatalogTotal(result.total);
+        setCatalogPage(1);
+        localStorage.setItem('tovo-public-domain-catalog', JSON.stringify(result.movies));
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setCatalogError(error instanceof Error ? error.message : 'The film catalog could not be loaded.');
+        }
+      } finally {
+        if (!controller.signal.aborted) setCatalogLoading(false);
+      }
+    };
+    void load();
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem('tovo-watchlist', JSON.stringify(watchlist));
   }, [watchlist]);
+  useEffect(() => {
+    localStorage.setItem('tovo-watchlist-movies', JSON.stringify(watchlistMovies));
+  }, [watchlistMovies]);
+  useEffect(() => {
+    localStorage.setItem('tovo-watch-progress', JSON.stringify(watchProgress));
+  }, [watchProgress]);
   useEffect(() => {
     localStorage.setItem('tovo-settings', JSON.stringify(settings));
     document.documentElement.classList.toggle('reduce-motion', settings.reducedMotion);
   }, [settings]);
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
+
+  useEffect(() => {
+    const video = playerVideoRef.current;
+    if (!video) return;
+    video.volume = settings.muted ? 0 : settings.volume / 100;
+    for (const track of Array.from(video.textTracks)) {
+      track.mode = settings.captions ? 'showing' : 'disabled';
+    }
+  }, [settings.volume, settings.muted, settings.captions, playing]);
+
+  useEffect(() => {
+    if (view !== 'Search') return;
+    const term = search.trim();
+    if (!term) {
+      searchRequestRef.current?.abort();
+      setSearchResults([]);
+      setSearchError('');
+      setSearchLoading(false);
+      setSearchHasMore(false);
+      setSearchPage(1);
+      return;
+    }
+
+    setSearchLoading(true);
+    setSearchResults([]);
+    setSearchTotal(0);
+    setSearchHasMore(false);
+    const controller = new AbortController();
+    searchRequestRef.current?.abort();
+    searchRequestRef.current = controller;
+    const timer = window.setTimeout(async () => {
+      setSearchLoading(true);
+      setSearchError('');
+      try {
+        const result = await getPublicDomainMovies({ search: term, page: 1, signal: controller.signal });
+        if (!controller.signal.aborted) {
+          setSearchResults(result.movies);
+          setSearchTotal(result.total);
+          setSearchPage(1);
+          setSearchHasMore(result.pageSize < result.total);
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setSearchError(error instanceof Error ? error.message : 'The title search could not be completed.');
+        }
+      } finally {
+        if (!controller.signal.aborted) setSearchLoading(false);
+      }
+    }, 300);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [search, view]);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -176,15 +198,27 @@ function App() {
     return () => window.cancelAnimationFrame(frame);
   }, [view, category, selected, playing]);
 
+  useEffect(() => {
+    if (view !== 'Home' || catalog.length === 0) return;
+    const frame = window.requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>('[data-remote-start]')?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [catalog.length > 0, view]);
+
   const setPage = (page: string) => {
     setSelected(null);
     setView(page);
+    if (page === 'Search') setSearch('');
     window.scrollTo({ top: 0, behavior: settings.reducedMotion ? 'auto' : 'smooth' });
   };
 
   const toggleWatchlist = (movie: Movie) => {
     const saved = watchlist.includes(movie.id);
     setWatchlist((items) => saved ? items.filter((id) => id !== movie.id) : [...items, movie.id]);
+    if (!saved) {
+      setWatchlistMovies((items) => items.some((item) => item.id === movie.id) ? items : [...items, movie]);
+    }
     notify(saved ? 'Removed from My List' : 'Added to My List');
   };
 
@@ -201,12 +235,14 @@ function App() {
     setView('Player');
     setPlayerControls(true);
     setIsPlaying(false);
+    setPlayerTime(0);
+    setPlayerDuration(movie.runtimeSeconds ?? 0);
   };
 
   const goBack = useCallback(() => {
     if (playing) {
       setPlaying(null);
-      setView(previousView === 'Details' ? 'Home' : previousView);
+      setView(selected ? 'Details' : previousView);
       setIsPlaying(false);
       return;
     }
@@ -233,7 +269,14 @@ function App() {
         goBack();
         return;
       }
-      if (event.key === 'Enter') return;
+      if (event.key === 'Enter') {
+        const target = event.target;
+        if (target instanceof HTMLElement && target.matches('button:not(:disabled), a[href]')) {
+          event.preventDefault();
+          target.click();
+        }
+        return;
+      }
       if (event.target instanceof HTMLInputElement && event.target.type === 'range' &&
         (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) return;
       if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' ||
@@ -241,7 +284,7 @@ function App() {
         event.preventDefault();
       }
       const focusable = Array.from(document.querySelectorAll<HTMLElement>(
-        'button:not(:disabled), input:not(:disabled):not([readonly]), [tabindex="0"]',
+        'button:not(:disabled), input:not(:disabled):not([readonly]), a[href], [tabindex="0"]',
       )).filter((el) => el.getClientRects().length && !el.closest('[hidden]'));
       const current = document.activeElement as HTMLElement;
       if (!focusable.includes(current)) {
@@ -270,20 +313,74 @@ function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [goBack, playing, settings.reducedMotion]);
 
-  const filteredMovies = useMemo(() => catalog.filter((movie) =>
-    `${movie.title} ${movie.genre} ${movie.year}`.toLowerCase().includes(search.trim().toLowerCase()),
-  ), [search]);
+  const filteredMovies = search.trim() ? searchResults : catalog;
   const featured = catalog[0];
-  const continueWatching = catalog.filter((movie) => movie.progress);
-  const savedMovies = catalog.filter((movie) => watchlist.includes(movie.id));
+  const continueWatching = catalog.filter((movie) => {
+    const progress = watchProgress[movie.id] ?? 0;
+    return movie.runtimeSeconds && progress > 0 && progress < movie.runtimeSeconds * 0.97;
+  });
+  const savedMovies = useMemo(() => {
+    const movies = new Map([...watchlistMovies, ...catalog].map((movie) => [movie.id, movie]));
+    return watchlist.flatMap((id) => movies.has(id) ? [movies.get(id)!] : []);
+  }, [catalog, watchlist, watchlistMovies]);
+
+  const loadMoreCatalog = async () => {
+    if (catalogLoadingMore) return;
+    setCatalogLoadingMore(true);
+    setCatalogError('');
+    try {
+      const nextPage = catalogPage + 1;
+      const result = await getPublicDomainMovies({ page: nextPage });
+      setCatalog((movies) => {
+        const merged = [...movies, ...result.movies.filter((movie) => !movies.some((item) => item.id === movie.id))];
+        localStorage.setItem('tovo-public-domain-catalog', JSON.stringify(merged));
+        return merged;
+      });
+      setCatalogTotal(result.total);
+      setCatalogPage(nextPage);
+    } catch (error) {
+      setCatalogError(error instanceof Error ? error.message : 'More films could not be loaded.');
+    } finally {
+      setCatalogLoadingMore(false);
+    }
+  };
+
+  const loadMoreSearch = async () => {
+    if (searchLoading) return;
+    const controller = new AbortController();
+    searchRequestRef.current?.abort();
+    searchRequestRef.current = controller;
+    setSearchLoading(true);
+    setSearchError('');
+    try {
+      const nextPage = searchPage + 1;
+      const result = await getPublicDomainMovies({ search, page: nextPage, signal: controller.signal });
+      setSearchResults((movies) => {
+        return [...movies, ...result.movies.filter((movie) => !movies.some((item) => item.id === movie.id))];
+      });
+      setSearchTotal(result.total);
+      setSearchPage(nextPage);
+      setSearchHasMore(nextPage * result.pageSize < result.total);
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        setSearchError(error instanceof Error ? error.message : 'More matching films could not be loaded.');
+      }
+    } finally {
+      if (!controller.signal.aborted) setSearchLoading(false);
+    }
+  };
 
   const movieCard = (movie: Movie, progress = false, remoteStart = false) => (
     <button className="movie-card" key={movie.id} data-testid={`card-movie-${movie.id}`} data-remote-start={remoteStart ? '' : undefined} onClick={() => openDetails(movie)} aria-label={`View ${movie.title}`}>
-      <img src={movie.image} alt="" loading="lazy" />
+      <img src={movie.image} alt="" loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
       <span className="movie-info">
         <span className="movie-name">{movie.title}</span>
         <span className="movie-type">{movie.genre} <span aria-hidden="true">·</span> {movie.runtime}</span>
-        {progress && movie.progress && <span className="progress-track" aria-label={`${movie.progress}% watched`}><span className="progress-fill" style={{ width: `${movie.progress}%` }} /></span>}
+        {progress && movie.runtimeSeconds && watchProgress[movie.id] > 0 && (
+          <span className="progress-track" aria-label={`${Math.round((watchProgress[movie.id] / movie.runtimeSeconds) * 100)}% watched`}>
+            <span className="progress-fill" style={{ width: `${Math.min(100, Math.round((watchProgress[movie.id] / movie.runtimeSeconds) * 100))}%` }} />
+          </span>
+        )}
       </span>
     </button>
   );
@@ -309,17 +406,40 @@ function App() {
   const CategoryIcon = selectedCategory.icon;
 
   const renderSettings = () => {
+    if (category === 'Display') return (
+      <>
+        <div className="setting-row setting-choice-row">
+          <div><h3>Color theme</h3><p>Change the app colors and contrast.</p></div>
+          <div className="setting-options" role="group" aria-label="Color theme">
+            {([
+              ['cinema', 'Cinema'],
+              ['warm', 'Warm'],
+              ['high-contrast', 'High contrast'],
+            ] as const).map(([value, label]) => (
+              <button key={value} className={`setting-option ${settings.theme === value ? 'selected' : ''}`} aria-pressed={settings.theme === value} data-testid={`theme-${value}`} onClick={() => updateSetting('theme', value)}>{label}</button>
+            ))}
+          </div>
+        </div>
+        <div className="setting-row setting-choice-row">
+          <div><h3>Poster size</h3><p>Choose the size of movie covers while browsing.</p></div>
+          <div className="setting-options" role="group" aria-label="Poster size">
+            <button className={`setting-option ${settings.posterSize === 'regular' ? 'selected' : ''}`} aria-pressed={settings.posterSize === 'regular'} data-testid="poster-size-regular" onClick={() => updateSetting('posterSize', 'regular')}>Regular</button>
+            <button className={`setting-option ${settings.posterSize === 'large' ? 'selected' : ''}`} aria-pressed={settings.posterSize === 'large'} data-testid="poster-size-large" onClick={() => updateSetting('posterSize', 'large')}>Large</button>
+          </div>
+        </div>
+      </>
+    );
     if (category === 'Playback') return (
       <>
         <div className="setting-row">
-          <div><h3>Direct video URL</h3><p>Use a video URL you have permission to play. No third-party stream sources are included.</p></div>
+          <div><h3>Custom video override</h3><p>Optional. When saved, this direct video URL is used instead of each film’s Archive copy.</p></div>
           <div className="setting-input">
-            <input aria-label="Direct video URL" data-testid="input-playback-url" type="url" placeholder="Use the on-screen keyboard below" value={urlDraft} readOnly tabIndex={-1} />
+            <input aria-label="Custom video URL" data-testid="input-playback-url" type="url" placeholder="Blank uses the selected film’s video" value={urlDraft} readOnly tabIndex={-1} />
             <button data-testid="button-save-playback-url" onClick={() => {
               const trimmed = urlDraft.trim();
-              if (trimmed && !/^https?:\/\//i.test(trimmed)) { notify('Enter a complete http or https URL'); return; }
+              if (trimmed && !/^https?:\/\/\S+$/i.test(trimmed)) { notify('Enter a complete http or https URL'); return; }
               updateSetting('playbackUrl', trimmed);
-              notify(trimmed ? 'Playback source saved' : 'Playback source cleared');
+              notify(trimmed ? 'Custom video override saved' : 'Using each film’s Archive video');
             }}>Save</button>
           </div>
         </div>
@@ -334,7 +454,7 @@ function App() {
                   type="button"
                   data-testid={`url-key-row-${rowIndex}-item-${keyIndex}`}
                   data-remote-start={category === 'Playback' && rowIndex === 0 && key === 'https://' ? '' : undefined}
-                  onClick={() => setUrlDraft((draft) => draft + key.toLowerCase())}
+                  onClick={() => setUrlDraft((draft) => draft + (key.length > 1 ? key.toLowerCase() : key.toLowerCase()))}
                 >{key}</button>
               ))}
             </div>
@@ -344,42 +464,38 @@ function App() {
             <button className="keyboard-key wide" type="button" data-testid="url-key-clear" onClick={() => setUrlDraft('')}>Clear</button>
           </div>
         </div>
-        <div className="setting-row"><div><h3>Autoplay</h3><p>Start configured video as soon as playback opens.</p></div><button className={`toggle ${settings.autoplay ? 'on' : ''}`} aria-label="Toggle autoplay" aria-pressed={settings.autoplay} data-testid="toggle-autoplay" onClick={() => updateSetting('autoplay', !settings.autoplay)}><i /></button></div>
-        <div className="setting-row"><div><h3>Current source</h3><p>{settings.playbackUrl ? settings.playbackUrl : 'No video source configured'}</p></div><span className="source-status">{settings.playbackUrl ? <><Check size={16} /> Ready</> : 'Not set'}</span></div>
+        <div className="setting-row"><div><h3>Autoplay</h3><p>Start the video automatically when you open a film.</p></div><button className={`toggle ${settings.autoplay ? 'on' : ''}`} aria-label="Toggle autoplay" aria-pressed={settings.autoplay} data-testid="toggle-autoplay" onClick={() => updateSetting('autoplay', !settings.autoplay)}><i /></button></div>
+        <div className="setting-row"><div><h3>Resume playback</h3><p>Continue from the saved position when you reopen a film.</p></div><button className={`toggle ${settings.resumePlayback ? 'on' : ''}`} aria-label="Toggle resume playback" aria-pressed={settings.resumePlayback} data-testid="toggle-resume-playback" onClick={() => updateSetting('resumePlayback', !settings.resumePlayback)}><i /></button></div>
+        <div className="setting-row"><div><h3>Playback source</h3><p>{settings.playbackUrl ? 'Your saved custom video URL overrides the catalog source.' : 'Each film uses its own playable video file from Internet Archive.'}</p></div><span className="source-status">{settings.playbackUrl ? <><Check size={16} /> Custom</> : 'Film source'}</span></div>
       </>
     );
     if (category === 'Audio') return (
       <>
         <div className="setting-row"><div><h3>Volume</h3><p>Default playback level · {settings.volume}%</p></div><input className="range" data-testid="input-volume" aria-label="Default volume" type="range" min="0" max="100" value={settings.volume} onChange={(event) => updateSetting('volume', Number(event.target.value))} /></div>
-        <div className="setting-row"><div><h3>Dialogue enhancement</h3><p>Keep spoken-word settings in one place.</p></div><span className="source-status">Native player</span></div>
-        <div className="setting-row"><div><h3>Audio output</h3><p>Output is controlled by this browser and your device.</p></div><span className="source-status"><Headphones size={16} /> Device</span></div>
+        <div className="setting-row"><div><h3>{settings.muted ? <><VolumeX size={17} aria-hidden="true" /> Muted</> : <><Volume2 size={17} aria-hidden="true" /> Sound on</>}</h3><p>{settings.muted ? 'Player audio is muted.' : 'Player audio uses the volume level above.'}</p></div><button className={`toggle ${settings.muted ? 'on' : ''}`} aria-label="Toggle mute" aria-pressed={settings.muted} data-testid="toggle-mute" onClick={() => updateSetting('muted', !settings.muted)}><i /></button></div>
       </>
     );
     if (category === 'Accessibility') return (
       <>
         <div className="setting-row"><div><h3>Reduced motion</h3><p>Reduce animated transitions and smooth scrolling.</p></div><button className={`toggle ${settings.reducedMotion ? 'on' : ''}`} aria-label="Toggle reduced motion" aria-pressed={settings.reducedMotion} data-testid="toggle-reduced-motion" onClick={() => updateSetting('reducedMotion', !settings.reducedMotion)}><i /></button></div>
-        <div className="setting-row"><div><h3>Captions preference</h3><p>Request captions when the configured video provides a caption track.</p></div><button className={`toggle ${settings.captions ? 'on' : ''}`} aria-label="Toggle captions preference" aria-pressed={settings.captions} data-testid="toggle-captions" onClick={() => updateSetting('captions', !settings.captions)}><i /></button></div>
-        <div className="setting-row"><div><h3>Remote navigation</h3><p>Use the arrow keys to move focus, Enter to select, and Escape to go back. Search and playback URL entry use on-screen keyboards.</p></div><Keyboard size={19} color="#cf9278" /></div>
+        <div className="setting-row"><div><h3>Captions</h3><p>Turn on a film’s English captions when an Archive VTT track is available.</p></div><button className={`toggle ${settings.captions ? 'on' : ''}`} aria-label="Toggle captions" aria-pressed={settings.captions} data-testid="toggle-captions" onClick={() => updateSetting('captions', !settings.captions)}><i /></button></div>
+        <div className="setting-row"><div><h3>Larger text</h3><p>Increase the interface text size for easier reading.</p></div><button className={`toggle ${settings.largerText ? 'on' : ''}`} aria-label="Toggle larger text" aria-pressed={settings.largerText} data-testid="toggle-larger-text" onClick={() => updateSetting('largerText', !settings.largerText)}><i /></button></div>
+        <div className="setting-row"><div><h3>Remote navigation</h3><p>Move with the arrows, select with Enter, and return with Escape.</p></div><Keyboard size={19} color="#cf9278" /></div>
       </>
     );
     if (category === 'About') return (
       <>
-        <div className="setting-row"><div><h3>Tovo TV</h3><p>A living-room browsing prototype built for the web.</p></div><span className="source-status">Preview</span></div>
-        <div className="setting-row"><div><h3>Playback is yours</h3><p>This prototype does not include licensed titles or a content delivery service. Add a direct video URL you are authorized to use.</p></div><ShieldCheck size={20} color="#cf9278" /></div>
-        <div className="setting-row"><div><h3>Platform note</h3><p>This is a browser experience, not a bootable TV operating system.</p></div><Monitor size={20} color="#cf9278" /></div>
+        <div className="setting-row"><div><h3>Real film catalog</h3><p>Titles and video files are loaded live from Internet Archive’s feature-film collection.</p></div><span className="source-status">{catalogTotal.toLocaleString()} records</span></div>
+        <div className="setting-row"><div><h3>Rights information</h3><p>Only items whose Archive metadata declares a public-domain license are listed. Check each source record for rights details.</p></div><ShieldCheck size={20} color="#cf9278" /></div>
+        <div className="setting-row"><div><h3>Catalog source</h3><p>Internet Archive hosts these films. Commercial subscription catalogs and new releases are not included.</p></div><a className="source-link" href="https://archive.org/details/feature_films" target="_blank" rel="noreferrer">Open collection</a></div>
+        <div className="setting-row"><div><h3>App data</h3><p>Your settings, saved list, and viewing positions are stored in this browser.</p></div><Monitor size={20} color="#cf9278" /></div>
       </>
     );
-    return (
-      <>
-        <div className="setting-row"><div><h3>Interface motion</h3><p>Use the reduced-motion preference set on your device.</p></div><span className="source-status">{settings.reducedMotion ? 'Reduced' : 'Standard'}</span></div>
-        <div className="setting-row"><div><h3>Browse layout</h3><p>Poster rails adapt to your screen size, from a television to a phone.</p></div><SlidersHorizontal size={19} color="#cf9278" /></div>
-        <div className="setting-row"><div><h3>Display mode</h3><p>Graphite, warm neutral, and copper. Tuned for a dim room.</p></div><span className="source-status">Cinema</span></div>
-      </>
-    );
+    return null;
   };
 
   return (
-    <div className="app-shell grain" data-testid="tovo-app">
+    <div className={`app-shell grain theme-${settings.theme} poster-${settings.posterSize} ${settings.largerText ? 'larger-text' : ''}`} data-testid="tovo-app">
       {view !== 'Player' && (
         <>
           <header className="topbar">
@@ -411,45 +527,67 @@ function App() {
       <main>
         {view === 'Home' && (
           <div className="view-fade" data-testid="screen-home">
-            <section className="hero" aria-label="Featured title">
-              <img className="hero-image" src={featured.image} alt="" />
-              <div className="hero-shade" />
-              <div className="hero-content">
-                <div className="eyebrow">The Tovo premiere · Featured</div>
-                <h1 className="hero-title">{featured.title}</h1>
-                <div className="meta"><span>{featured.year}</span><span className="meta-dot">•</span><span>{featured.runtime}</span><span className="meta-dot">•</span><span>{featured.rating}</span><span className="meta-dot">•</span><span>{featured.genre}</span></div>
-                <p className="synopsis">{featured.synopsis}</p>
-                <div className="action-row">
-              <button className="action-button primary" data-testid="button-featured-play" data-remote-start="" onClick={() => startPlayback(featured)}><Play size={18} fill="currentColor" /> Play</button>
-                  <button className="action-button secondary" data-testid="button-featured-details" onClick={() => openDetails(featured)}><Info size={18} /> Details</button>
-                  <button className="action-button secondary" data-testid="button-featured-list" onClick={() => toggleWatchlist(featured)}><Bookmark size={17} fill={watchlist.includes(featured.id) ? 'currentColor' : 'none'} /> {watchlist.includes(featured.id) ? 'In My List' : 'My List'}</button>
+            {featured ? (
+              <section className="hero" aria-label="Featured public-domain film">
+                <img className="hero-image" src={featured.image} alt="" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
+                <div className="hero-shade" />
+                <div className="hero-content">
+                  <div className="eyebrow">Internet Archive · Public-domain film</div>
+                  <h1 className="hero-title">{featured.title}</h1>
+                  <div className="meta"><span>{featured.year}</span><span className="meta-dot">•</span><span>{featured.runtime}</span><span className="meta-dot">•</span><span>{featured.genre}</span></div>
+                  <p className="synopsis">{featured.synopsis}</p>
+                  <div className="action-row">
+                    <button className="action-button primary" data-testid="button-featured-play" data-remote-start="" onClick={() => startPlayback(featured)}><Play size={18} fill="currentColor" /> Play film</button>
+                    <button className="action-button secondary" data-testid="button-featured-details" onClick={() => openDetails(featured)}><Info size={18} /> Details</button>
+                    <button className="action-button secondary" data-testid="button-featured-list" onClick={() => toggleWatchlist(featured)}><Bookmark size={17} fill={watchlist.includes(featured.id) ? 'currentColor' : 'none'} /> {watchlist.includes(featured.id) ? 'In My List' : 'My List'}</button>
+                  </div>
+                  <a className="hero-source-link" href={featured.sourceUrl} target="_blank" rel="noreferrer">Source & rights: {featured.licenseName}</a>
                 </div>
-              </div>
-              <span className="feature-index">01 / 08 · TONIGHT'S PICK</span>
-            </section>
+                <span className="feature-index">01 / {catalog.length.toString().padStart(2, '0')} · ARCHIVE FILM</span>
+              </section>
+            ) : (
+              <section className="hero hero-empty" aria-label="Film catalog status">
+                <div className="hero-content">
+                  <div className="eyebrow">Internet Archive · Feature films</div>
+                  <h1 className="hero-title">{catalogLoading ? 'Loading real films…' : 'The catalog is not available.'}</h1>
+                  <p className="synopsis">{catalogError || 'Loading titles and playable video files from the public-domain collection.'}</p>
+                  {!catalogLoading && <button className="action-button primary" data-remote-start="" onClick={() => window.location.reload()}>Try again</button>}
+                </div>
+              </section>
+            )}
             <div className="content-area">
               {rail('Continue Watching', continueWatching, true, 'Pick up where you left off')}
-              {rail('Made for your evening', [catalog[4], catalog[5], catalog[6], catalog[7], catalog[1]], false, 'A few good places to begin')}
-              {rail('Recently added', [catalog[2], catalog[3], catalog[0], catalog[5]], false)}
+              {rail('Popular public-domain films', catalog.slice(1, 7), false, 'Playable titles from Internet Archive')}
+              {rail('More from the collection', catalog.slice(7, 13), false)}
+              {catalogError && catalog.length > 0 && <p className="catalog-message error-message" role="alert">{catalogError}</p>}
+              {catalogPage * 18 < catalogTotal ? (
+                <button className="action-button secondary load-more-button" data-testid="button-load-more-films" disabled={catalogLoadingMore} onClick={() => void loadMoreCatalog()}>{catalogLoadingMore ? 'Loading films…' : 'Load more films'}</button>
+              ) : null}
             </div>
           </div>
         )}
 
         {view === 'Search' && (
           <section className="view-fade" data-testid="screen-search">
-            <div className="page-heading"><div className="eyebrow">Find your next watch</div><h1>Search</h1><p>Titles, genres, a mood. Start anywhere.</p></div>
+            <div className="page-heading"><div className="eyebrow">Search the real catalog</div><h1>Search</h1><p>Search public-domain feature-film titles hosted by Internet Archive.</p></div>
             <div className="search-panel">
-              <label className="sr-only" htmlFor="title-search">Search titles and genres</label>
+              <label className="sr-only" htmlFor="title-search">Search public-domain film titles</label>
               <div className="search-input-wrap"><Search size={22} /><input id="title-search" className="search-input" type="search" placeholder="Choose letters below" value={search} readOnly tabIndex={-1} data-testid="input-search" /><button className="icon-button" aria-label="Clear search" data-testid="button-clear-search" onClick={() => setSearch('')}><X size={18} /></button></div>
               <div className="keyboard" aria-label="On-screen keyboard" data-testid="on-screen-keyboard">
                 {onScreenKeys.map((key, index) => <button className="keyboard-key" key={key} data-testid={`keyboard-key-${key.toLowerCase()}`} data-remote-start={index === 0 ? '' : undefined} onClick={() => setSearch((query) => query + key.toLowerCase())}>{key}</button>)}
                 <button className="keyboard-key wide" data-testid="keyboard-space" onClick={() => setSearch((query) => `${query} `)}>Space</button>
                 <button className="keyboard-key wide" data-testid="keyboard-backspace" onClick={() => setSearch((query) => query.slice(0, -1))}>Delete</button>
               </div>
+              <div className="catalog-result-status" role="status" aria-live="polite">
+                {searchLoading ? 'Searching Internet Archive…' : search.trim() ? `${searchTotal.toLocaleString()} matching catalog records` : `${catalog.length} films loaded · enter a title to search the full collection`}
+              </div>
+              {searchError && <p className="catalog-message error-message" role="alert">{searchError}</p>}
               <div className="catalog-grid search-results" data-testid="search-results">
                 {filteredMovies.map((movie) => movieCard(movie))}
               </div>
-              {filteredMovies.length === 0 && <div className="empty-state" data-testid="empty-search"><Search size={25} /><h2>Nothing in the frame</h2><p>Try a different title or genre. Your search stays on this device.</p></div>}
+              {(searchLoading || (!search.trim() && catalogLoading)) && filteredMovies.length === 0 && <div className="empty-state"><Search size={25} /><h2>Looking through the collection</h2><p>Matching films and their playable video files are being checked.</p></div>}
+              {!searchLoading && !catalogLoading && filteredMovies.length === 0 && <div className="empty-state" data-testid="empty-search"><Search size={25} /><h2>{search.trim() ? 'No playable film found' : 'No films loaded yet'}</h2><p>{search.trim() ? 'Try another title. Only films with public-domain metadata and a playable video file are shown.' : catalogError || 'Check your connection and try again.'}</p></div>}
+              {search.trim() && searchHasMore && <button className="action-button secondary load-more-button" data-testid="button-search-more" disabled={searchLoading} onClick={() => void loadMoreSearch()}>{searchLoading ? 'Loading…' : 'More matching films'}</button>}
             </div>
           </section>
         )}
@@ -465,18 +603,19 @@ function App() {
 
         {view === 'Details' && selected && (
           <section className="details view-fade" data-testid={`screen-details-${selected.id}`}>
-            <img className="details-backdrop" src={selected.image} alt="" />
+            <img className="details-backdrop" src={selected.image} alt="" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
             <div className="details-content">
               <button className="back-link" aria-label="Back" data-testid="button-details-back" onClick={goBack}><ArrowLeft size={20} /></button>
               <div className="eyebrow">{selected.genre}</div>
               <h1>{selected.title}</h1>
-              <div className="detail-facts"><span>{selected.year}</span><span>{selected.runtime}</span><span>{selected.rating}</span><span>Feature film</span></div>
+              <div className="detail-facts"><span>{selected.year}</span><span>{selected.runtime}</span><span>Feature film</span></div>
               <p>{selected.synopsis}</p>
               <div className="action-row">
-              <button className="action-button primary" data-testid="button-details-play" data-remote-start="" onClick={() => startPlayback(selected)}><Play size={18} fill="currentColor" /> Play</button>
+                <button className="action-button primary" data-testid="button-details-play" data-remote-start="" onClick={() => startPlayback(selected)}><Play size={18} fill="currentColor" /> Play film</button>
                 <button className="action-button secondary" data-testid="button-details-list" onClick={() => toggleWatchlist(selected)}><Bookmark size={17} fill={watchlist.includes(selected.id) ? 'currentColor' : 'none'} /> {watchlist.includes(selected.id) ? 'In My List' : 'Add to My List'}</button>
               </div>
-              <div className="detail-note">Available to browse in this prototype. Playback requires a direct video URL you are authorized to use.</div>
+              <div className="detail-note">Rights metadata: {selected.licenseName}. This title’s video is hosted by Internet Archive.</div>
+              <a className="source-link detail-source-link" href={selected.sourceUrl} target="_blank" rel="noreferrer">View original film and rights record</a>
             </div>
           </section>
         )}
@@ -496,7 +635,7 @@ function App() {
                 <div className="panel-kicker"><CategoryIcon size={17} /> PREFERENCES</div>
                 <h2>{category}</h2><p>{selectedCategory.description}</p>
                 {renderSettings()}
-                <div className="settings-footer">Settings and your list are saved on this device only.</div>
+                <div className="settings-footer">Your choices are saved in this browser. Arrow keys move focus; Enter selects; Escape goes back.</div>
               </article>
             </div>
           </section>
@@ -510,49 +649,78 @@ function App() {
             <button className="icon-button" aria-label="Close player" data-testid="button-close-player" onClick={(event) => { event.stopPropagation(); goBack(); }}><X size={21} /></button>
           </header>
           <div className="player-box">
-            {settings.playbackUrl ? (
-              <video
-                ref={playerVideoRef}
-                data-testid="native-player"
-                src={settings.playbackUrl}
-                autoPlay={settings.autoplay}
-                playsInline
-                tabIndex={-1}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onClick={(event) => event.stopPropagation()}
-                onError={() => { setIsPlaying(false); notify('This video could not be loaded. Check the URL and format in Settings.'); }}
-              >This browser cannot play this video.</video>
-            ) : (
-              <div className="player-setup" data-testid="player-setup-state">
-                <span className="setup-icon"><Film size={25} /></span>
-                <div className="eyebrow">Playback setup</div>
-                <h1>Ready when you are.</h1>
-                <p>Tovo doesn't bundle streams. Add a direct video URL you are authorized to play in Settings, then come back here to watch it in the native player.</p>
-                <div className="action-row" style={{ justifyContent: 'center' }}>
-                  <button className="action-button primary" data-testid="button-configure-playback" data-remote-start="" onClick={(event) => { event.stopPropagation(); setPlaying(null); setCategory('Playback'); setPage('Settings'); }}>Configure playback</button>
-                  <button className="action-button secondary" data-testid="button-player-back" onClick={(event) => { event.stopPropagation(); goBack(); }}>Back to browsing</button>
-                </div>
-              </div>
-            )}
+            <video
+              ref={playerVideoRef}
+              data-testid="native-player"
+              src={settings.playbackUrl || playing.videoUrl}
+              poster={playing.image}
+              autoPlay={settings.autoplay}
+              muted={settings.muted}
+              playsInline
+              preload="metadata"
+              tabIndex={-1}
+              onLoadedMetadata={(event) => {
+                const video = event.currentTarget;
+                const duration = Number.isFinite(video.duration) ? video.duration : playing.runtimeSeconds ?? 0;
+                setPlayerDuration(duration);
+                if (settings.resumePlayback) {
+                  const saved = watchProgress[playing.id] ?? 0;
+                  if (saved > 0 && (!duration || saved < duration - 10)) video.currentTime = saved;
+                }
+                video.volume = settings.muted ? 0 : settings.volume / 100;
+                for (const track of Array.from(video.textTracks)) track.mode = settings.captions ? 'showing' : 'disabled';
+              }}
+              onTimeUpdate={(event) => {
+                const video = event.currentTarget;
+                const currentTime = Number.isFinite(video.currentTime) ? video.currentTime : 0;
+                setPlayerTime(currentTime);
+                if (Math.floor(currentTime) !== Math.floor(watchProgress[playing.id] ?? -1)) {
+                  setWatchProgress((progress) => ({ ...progress, [playing.id]: currentTime }));
+                }
+              }}
+              onPlay={() => setIsPlaying(true)}
+              onPause={(event) => {
+                setIsPlaying(false);
+                if (event.currentTarget.currentTime > 0) {
+                  setWatchProgress((progress) => ({ ...progress, [playing.id]: event.currentTarget.currentTime }));
+                }
+              }}
+              onEnded={() => {
+                setIsPlaying(false);
+                setWatchProgress((progress) => {
+                  const next = { ...progress };
+                  delete next[playing.id];
+                  return next;
+                });
+              }}
+              onClick={(event) => event.stopPropagation()}
+              onError={() => { setIsPlaying(false); notify('This video could not be loaded. Open its Archive record to check availability.'); }}
+            >
+              {playing.captionUrl && <track kind="captions" src={playing.captionUrl} srcLang="en" label="English" default={settings.captions} />}
+              This browser cannot play this video. Open the film’s Archive record for alternate formats.
+            </video>
           </div>
-          {settings.playbackUrl && (
-            <div className="player-controls" onClick={(event) => event.stopPropagation()}>
-              <div className="player-bottom">
-                <span>{isPlaying ? 'Playing' : 'Paused'} · {playing.title}</span>
-                <div className="player-control-buttons">
-                  <button className="icon-button" aria-label="Rewind 10 seconds" data-testid="button-player-rewind" onClick={() => { if (playerVideoRef.current) playerVideoRef.current.currentTime = Math.max(0, playerVideoRef.current.currentTime - 10); }}>−10s</button>
-                  <button className="action-button primary" aria-label={isPlaying ? 'Pause playback' : 'Start playback'} data-testid="button-player-toggle" data-remote-start="" onClick={() => {
-                    const video = playerVideoRef.current;
-                    if (video?.paused) void video.play().catch(() => notify('Playback could not start. Check the video URL.'));
-                    else video?.pause();
-                  }}>{isPlaying ? 'Pause' : 'Play'}</button>
-                  <button className="icon-button" aria-label="Skip ahead 10 seconds" data-testid="button-player-forward" onClick={() => { if (playerVideoRef.current) playerVideoRef.current.currentTime = Math.min(playerVideoRef.current.duration || Infinity, playerVideoRef.current.currentTime + 10); }}>+10s</button>
-                  <button className="icon-button" aria-label="Back to browsing" data-testid="button-player-exit" onClick={goBack}><ArrowLeft size={18} /></button>
-                </div>
+          <div className="player-controls" onClick={(event) => event.stopPropagation()}>
+            <label className="sr-only" htmlFor="player-seek">Seek through film</label>
+            <input id="player-seek" className="player-progress" data-testid="player-seek" type="range" min="0" max={playerDuration || 1} step="1" value={Math.min(playerTime, playerDuration || playerTime)} onChange={(event) => {
+              const time = Number(event.target.value);
+              if (playerVideoRef.current) playerVideoRef.current.currentTime = time;
+              setPlayerTime(time);
+            }} />
+            <div className="player-bottom">
+              <span>{formatPlayerTime(playerTime)} / {formatPlayerTime(playerDuration)} · {isPlaying ? 'Playing' : 'Paused'}{playing.captionUrl ? '' : ' · No captions file'}</span>
+              <div className="player-control-buttons">
+                <button className="icon-button" aria-label="Rewind 10 seconds" data-testid="button-player-rewind" onClick={() => { if (playerVideoRef.current) playerVideoRef.current.currentTime = Math.max(0, playerVideoRef.current.currentTime - 10); }}>−10s</button>
+                <button className="action-button primary" aria-label={isPlaying ? 'Pause playback' : 'Start playback'} data-testid="button-player-toggle" data-remote-start="" onClick={() => {
+                  const video = playerVideoRef.current;
+                  if (video?.paused) void video.play().catch(() => notify('Playback could not start. Use Enter to try again or check the Archive source.'));
+                  else video?.pause();
+                }}>{isPlaying ? 'Pause' : 'Play'}</button>
+                <button className="icon-button" aria-label="Skip ahead 10 seconds" data-testid="button-player-forward" onClick={() => { if (playerVideoRef.current) playerVideoRef.current.currentTime = Math.min(playerVideoRef.current.duration || Infinity, playerVideoRef.current.currentTime + 10); }}>+10s</button>
+                <button className="icon-button" aria-label="Back to browsing" data-testid="button-player-exit" onClick={goBack}><ArrowLeft size={18} /></button>
               </div>
             </div>
-          )}
+          </div>
         </section>
       )}
       <div className={`toast ${toast ? 'show' : ''}`} role="status" aria-live="polite" data-testid="status-toast">{toast}</div>
