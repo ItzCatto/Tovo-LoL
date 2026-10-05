@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Source Failover Engine</title>
+    <style>
+        body { background: #0f172a; color: #f8fafc; font-family: system-ui, sans-serif; padding: 40px; margin: 0; }
+        .dashboard { max-width: 900px; margin: 0 auto; background: #1e293b; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5); }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+        select, input { padding: 8px 12px; background: #334155; border: 1px solid #475569; color: white; border-radius: 4px; }
+        .btn { padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #1d4ed8; }
+        .stage { position: relative; padding-bottom: 56.25%; height: 0; background: #000; border-radius: 4px; overflow: hidden; }
+        .stage iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <h2>Multi-Source Alternative Architecture</h2>
+    
+    <div class="controls">
+        <label for="movieId">TMDB ID:</label>
+        <input type="text" id="movieId" value="272" placeholder="e.g. 272">
+        
+        <label for="sourceSelect">Source Route:</label>
+        <select id="sourceSelect">
+            <option value="https://vidsrc.to">VidSrc (Alternative 1)</option>
+            <option value="https://1embed.cc">1Embed (Alternative 2)</option>
+            <option value="https://embed.su">Embed.su (Alternative 3)</option>
+        </select>
+        
+        <button class="btn" onclick="initializeStream()">Route Stream</button>
+    </div>
+
+    <div class="stage">
+        <iframe id="viewscreen" src="about:blank" allowfullscreen></iframe>
+    </div>g
+</div>
+
+<script>
+    function initializeStream() {
+        const id = document.getElementById('movieId').value;
+        const sourceUrl = document.getElementById('sourceSelect').value;
+        const viewscreen = document.getElementById('viewscreen');
+        
+        if(!id) return alert("Valid target asset string required");
+        
+        // Constructs the layout seamlessly mapping the choice string to the source base
+        viewscreen.src = `${sourceUrl}${id}`;
+    }
+</script>
+
+</body>
+</html>
+
+
+
+
